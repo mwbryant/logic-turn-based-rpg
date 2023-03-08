@@ -1,3 +1,5 @@
+use bevy::sprite::Anchor;
+
 use crate::prelude::*;
 
 pub struct ArtPlugin;
@@ -9,6 +11,20 @@ pub struct CharacterBundle {
     character: Character,
 }
 
+#[derive(Bundle)]
+pub struct WeaponBundle {
+    #[bundle]
+    sprite_sheet: SpriteSheetBundle,
+    weapon: Weapon,
+}
+
+#[derive(Bundle)]
+pub struct IconBundle {
+    #[bundle]
+    sprite_sheet: SpriteSheetBundle,
+    icon: Icon,
+}
+
 impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
@@ -17,6 +33,13 @@ impl Plugin for ArtPlugin {
 }
 
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
+pub const ICON_SHEET_WIDTH: usize = 34;
+
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
+pub enum Icon {
+    #[default]
+    Pointer,
+}
 
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
 pub enum Character {
@@ -45,24 +68,52 @@ pub enum Character {
     Knight,
 }
 
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
+pub enum Weapon {
+    #[default]
+    BasicStaffOrange,
+    BasicSpear,
+}
+
 #[derive(Resource)]
 pub struct SpriteSheetMaps {
     character_atlas: Handle<TextureAtlas>,
+    icon_atlas: Handle<TextureAtlas>,
     pub characters: HashMap<Character, usize>,
+    pub weapons: HashMap<Weapon, usize>,
+    pub icons: HashMap<Icon, usize>,
 }
 
 fn update_art(
-    mut sprites: Query<(
+    mut characters: Query<(
         &mut TextureAtlasSprite,
         &mut Handle<TextureAtlas>,
         &Character,
     )>,
+    mut weapons: Query<
+        (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Weapon),
+        Without<Character>,
+    >,
+    mut icons: Query<
+        (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Icon),
+        (Without<Character>, Without<Weapon>),
+    >,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
-    for (mut sprite, mut atlas, character) in &mut sprites {
+    for (mut sprite, mut atlas, character) in &mut characters {
         //TODO animation?
         *atlas = sprite_sheets.character_atlas.clone();
         sprite.index = sprite_sheets.characters[character];
+    }
+    for (mut sprite, mut atlas, weapon) in &mut weapons {
+        //TODO animation?
+        *atlas = sprite_sheets.character_atlas.clone();
+        sprite.index = sprite_sheets.weapons[weapon];
+    }
+    for (mut sprite, mut atlas, icon) in &mut icons {
+        //TODO animation?
+        *atlas = sprite_sheets.icon_atlas.clone();
+        sprite.index = sprite_sheets.icons[icon];
     }
 }
 
@@ -81,6 +132,17 @@ fn setup_spritesheet_maps(
         None,
     );
     let character_atlas = texture_atlases.add(texture_atlas);
+
+    let texture_handle = asset_server.load("input_icons/Tilemap/tilemap.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::new(16.0, 16.0),
+        ICON_SHEET_WIDTH,
+        24,
+        Some(Vec2::splat(1.0)),
+        None,
+    );
+    let icon_atlas = texture_atlases.add(texture_atlas);
 
     let characters = HashMap::from([
         (Character::WhiteBase, 0),
@@ -107,9 +169,16 @@ fn setup_spritesheet_maps(
         (Character::Knight, CHARACTER_SHEET_WIDTH * 11 + 1),
     ]);
 
+    let icons = HashMap::from([(Icon::Pointer, ICON_SHEET_WIDTH * 17)]);
+
+    let weapons = HashMap::from([(Weapon::BasicStaffOrange, 42), (Weapon::BasicSpear, 47)]);
+
     commands.insert_resource(SpriteSheetMaps {
         character_atlas,
+        icon_atlas,
         characters,
+        weapons,
+        icons,
     });
 }
 
@@ -140,6 +209,64 @@ impl CharacterBundle {
         };
 
         bundle.sprite_sheet.transform.translation = position.extend(CHARACTER_Z);
+
+        bundle
+    }
+}
+
+impl Default for WeaponBundle {
+    fn default() -> Self {
+        Self {
+            sprite_sheet: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::splat(1.0)),
+                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, 0.0)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),
+                ..Default::default()
+            },
+            weapon: Weapon::BasicSpear,
+        }
+    }
+}
+
+impl WeaponBundle {
+    pub fn new(position: Vec2, weapon: Weapon, scale: Vec2) -> Self {
+        let mut bundle = WeaponBundle {
+            weapon,
+            ..default()
+        };
+
+        bundle.sprite_sheet.transform.translation = position.extend(WEAPON_Z);
+        bundle.sprite_sheet.transform.scale = scale.extend(1.0);
+
+        bundle
+    }
+}
+
+impl Default for IconBundle {
+    fn default() -> Self {
+        Self {
+            sprite_sheet: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::splat(1.0)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, ICON_Z)),
+                ..Default::default()
+            },
+            icon: Icon::Pointer,
+        }
+    }
+}
+
+impl IconBundle {
+    pub fn new(position: Vec2, icon: Icon, scale: Vec2) -> Self {
+        let mut bundle = IconBundle { icon, ..default() };
+
+        bundle.sprite_sheet.transform.translation = position.extend(ICON_Z);
+        bundle.sprite_sheet.transform.scale = scale.extend(1.0);
 
         bundle
     }
