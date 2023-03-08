@@ -1,8 +1,17 @@
 use crate::prelude::*;
 
+pub struct ArtPlugin;
+
+impl Plugin for ArtPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
+            .add_system(update_art);
+    }
+}
+
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Component, Clone, PartialEq, Eq, Hash)]
 pub enum Character {
     WhiteBase,
     WhiteBaseMouth,
@@ -30,10 +39,41 @@ pub enum Character {
 
 #[derive(Resource)]
 pub struct SpriteSheetMaps {
+    character_atlas: Handle<TextureAtlas>,
     pub characters: HashMap<Character, usize>,
 }
 
-pub fn setup_spritesheet_maps(mut commands: Commands) {
+fn update_art(
+    mut sprites: Query<(
+        &mut TextureAtlasSprite,
+        &mut Handle<TextureAtlas>,
+        &Character,
+    )>,
+    sprite_sheets: Res<SpriteSheetMaps>,
+) {
+    for (mut sprite, mut atlas, character) in &mut sprites {
+        //TODO animation?
+        *atlas = sprite_sheets.character_atlas.clone();
+        sprite.index = sprite_sheets.characters[character];
+    }
+}
+
+fn setup_spritesheet_maps(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let texture_handle = asset_server.load("characters/Spritesheet/roguelikeChar_transparent.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::new(16.0, 16.0),
+        54,
+        12,
+        Some(Vec2::splat(1.0)),
+        None,
+    );
+    let character_atlas = texture_atlases.add(texture_atlas);
+
     let characters = HashMap::from([
         (Character::WhiteBase, 0),
         (Character::WhiteBaseMouth, 1),
@@ -59,5 +99,8 @@ pub fn setup_spritesheet_maps(mut commands: Commands) {
         (Character::Knight, CHARACTER_SHEET_WIDTH * 11 + 1),
     ]);
     info!("Adding sprites");
-    commands.insert_resource(SpriteSheetMaps { characters });
+    commands.insert_resource(SpriteSheetMaps {
+        character_atlas,
+        characters,
+    });
 }
