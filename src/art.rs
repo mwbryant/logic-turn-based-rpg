@@ -2,6 +2,13 @@ use crate::prelude::*;
 
 pub struct ArtPlugin;
 
+#[derive(Bundle)]
+pub struct CharacterBundle {
+    #[bundle]
+    sprite_sheet: SpriteSheetBundle,
+    character: Character,
+}
+
 impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
@@ -11,8 +18,9 @@ impl Plugin for ArtPlugin {
 
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 
-#[derive(Component, Clone, PartialEq, Eq, Hash)]
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
 pub enum Character {
+    #[default]
     WhiteBase,
     WhiteBaseMouth,
     TanBase,
@@ -67,7 +75,7 @@ fn setup_spritesheet_maps(
     let texture_atlas = TextureAtlas::from_grid(
         texture_handle,
         Vec2::new(16.0, 16.0),
-        54,
+        CHARACTER_SHEET_WIDTH,
         12,
         Some(Vec2::splat(1.0)),
         None,
@@ -98,9 +106,41 @@ fn setup_spritesheet_maps(
         (Character::KnightArmed, CHARACTER_SHEET_WIDTH * 11),
         (Character::Knight, CHARACTER_SHEET_WIDTH * 11 + 1),
     ]);
-    info!("Adding sprites");
+
     commands.insert_resource(SpriteSheetMaps {
         character_atlas,
         characters,
     });
+}
+
+impl Default for CharacterBundle {
+    fn default() -> Self {
+        Self {
+            sprite_sheet: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::splat(1.0)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, CHARACTER_Z)),
+                ..Default::default()
+            },
+            // Calling ..default here causes a stack overflow........
+            // Using ..Default::default() gives a proper warning though....
+            // https://github.com/bevyengine/bevy/issues/6207
+            character: Character::WhiteBase,
+        }
+    }
+}
+
+impl CharacterBundle {
+    pub fn new(position: Vec2, character: Character) -> Self {
+        let mut bundle = CharacterBundle {
+            character,
+            ..default()
+        };
+
+        bundle.sprite_sheet.transform.translation = position.extend(CHARACTER_Z);
+
+        bundle
+    }
 }

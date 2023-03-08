@@ -1,4 +1,4 @@
-use bevy::input::common_conditions::input_toggle_active;
+use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_bevy_new_scheduling::prelude::*;
 
@@ -14,13 +14,15 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    let mut camera = Camera2dBundle::default();
+    let size = 20.0;
 
-    commands.spawn((
-        SpriteSheetBundle {
-            transform: Transform::from_scale(Vec3::splat(6.0)),
-            ..default()
-        },
+    camera.projection.scaling_mode = ScalingMode::FixedVertical(size);
+
+    commands.spawn(camera);
+
+    commands.spawn(CharacterBundle::new(
+        Vec2::new(-10.0, 0.0),
         Character::Knight,
     ));
 }
