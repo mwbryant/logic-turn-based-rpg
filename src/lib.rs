@@ -1,10 +1,12 @@
 mod art;
 mod combat;
+mod utils;
 mod weapons;
 
 pub mod prelude {
     pub use crate::art::*;
     pub use crate::combat::*;
+    pub use crate::utils::*;
     pub use crate::weapons::*;
     pub use bevy::{prelude::*, utils::HashMap};
 

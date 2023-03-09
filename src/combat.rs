@@ -10,14 +10,22 @@ impl Plugin for CombatPlugin {
                 spawn_player_attack_icons.in_schedule(OnEnter(CombatState::PlayerSelecting)),
             )
             .add_systems(
-                (lock_in_attack, despawn_player_attack_icons)
+                (
+                    lock_in_attack,
+                    despawn_with::<SelectionIcon>,
+                    despawn_with::<WeaponIcon>,
+                )
                     .chain()
                     .in_schedule(OnExit(CombatState::PlayerSelecting)),
             )
             .add_system(start_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
             .add_system(start_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
-            .add_system(despawn_melee_attack.in_schedule(OnExit(CombatState::PlayerAttacking)))
-            .add_system(despawn_melee_attack.in_schedule(OnExit(CombatState::EnemyAttacking)))
+            .add_system(
+                despawn_with::<MeleeAttack>.in_schedule(OnExit(CombatState::PlayerAttacking)),
+            )
+            .add_system(
+                despawn_with::<MeleeAttack>.in_schedule(OnExit(CombatState::EnemyAttacking)),
+            )
             .add_systems(
                 (player_select_attack, update_icon_location)
                     .in_set(OnUpdate(CombatState::PlayerSelecting)),
@@ -132,13 +140,6 @@ fn start_enemy_attack(mut commands: Commands, enemy: Query<&Enemy>) {
             max_weapon_rotation: 1.0,
         },
     ));
-}
-
-// TODO make this a generic system
-fn despawn_melee_attack(mut commands: Commands, attack: Query<Entity, With<MeleeAttack>>) {
-    for entity in &attack {
-        commands.entity(entity).despawn_recursive();
-    }
 }
 
 fn start_player_attack(
@@ -284,19 +285,6 @@ fn lock_in_attack(
     }
 
     unreachable!("Player didn't select anything :(");
-}
-
-fn despawn_player_attack_icons(
-    mut commands: Commands,
-    selection: Query<Entity, With<SelectionIcon>>,
-    weapons: Query<Entity, With<WeaponIcon>>,
-) {
-    for entity in &selection {
-        commands.entity(entity).despawn_recursive()
-    }
-    for entity in &weapons {
-        commands.entity(entity).despawn_recursive()
-    }
 }
 
 fn spawn_player_attack_icons(mut commands: Commands) {

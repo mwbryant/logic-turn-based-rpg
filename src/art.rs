@@ -8,9 +8,13 @@ impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
             .add_system(spawn_player_weapon.in_schedule(OnEnter(CombatState::PlayerAttacking)))
-            .add_system(despawn_player_weapon.in_schedule(OnExit(CombatState::PlayerAttacking)))
+            .add_system(
+                despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::PlayerAttacking)),
+            )
             .add_system(spawn_enemy_weapon.in_schedule(OnEnter(CombatState::EnemyAttacking)))
-            .add_system(despawn_enemy_weapon.in_schedule(OnExit(CombatState::EnemyAttacking)))
+            .add_system(
+                despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::EnemyAttacking)),
+            )
             .add_system(animate_melee::<Player>.in_set(OnUpdate(CombatState::PlayerAttacking)))
             .add_system(animate_melee::<Enemy>.in_set(OnUpdate(CombatState::EnemyAttacking)))
             .add_system(update_art)
@@ -133,19 +137,6 @@ fn animate_melee<T: Component>(
                 child_transform.rotation = Quat::from_rotation_z(0.0);
             }
         }
-    }
-}
-
-//TODO this can probably be a generic system over the With constraint
-fn despawn_player_weapon(mut commands: Commands, graphics: Query<Entity, With<WeaponGraphic>>) {
-    for entity in &graphics {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-
-fn despawn_enemy_weapon(mut commands: Commands, graphics: Query<Entity, With<WeaponGraphic>>) {
-    for entity in &graphics {
-        commands.entity(entity).despawn_recursive();
     }
 }
 
