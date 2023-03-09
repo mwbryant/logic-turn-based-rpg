@@ -4,6 +4,16 @@ use crate::prelude::*;
 
 pub struct ArtPlugin;
 
+impl Plugin for ArtPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
+            .add_system(update_art)
+            .register_type::<Icon>()
+            .register_type::<Weapon>()
+            .register_type::<Character>();
+    }
+}
+
 #[derive(Bundle)]
 pub struct CharacterBundle {
     #[bundle]
@@ -25,23 +35,16 @@ pub struct IconBundle {
     icon: Icon,
 }
 
-impl Plugin for ArtPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
-            .add_system(update_art);
-    }
-}
-
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 pub const ICON_SHEET_WIDTH: usize = 34;
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Icon {
     #[default]
     Pointer,
 }
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Character {
     #[default]
     WhiteBase,
@@ -68,7 +71,7 @@ pub enum Character {
     Knight,
 }
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Weapon {
     #[default]
     BasicStaffOrange,
