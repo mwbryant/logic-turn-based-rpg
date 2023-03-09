@@ -9,7 +9,6 @@ impl Plugin for ArtPlugin {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
             .add_system(update_art)
             .register_type::<Icon>()
-            .register_type::<Weapon>()
             .register_type::<Character>();
     }
 }
@@ -19,13 +18,6 @@ pub struct CharacterBundle {
     #[bundle]
     sprite_sheet: SpriteSheetBundle,
     character: Character,
-}
-
-#[derive(Bundle)]
-pub struct WeaponBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    weapon: Weapon,
 }
 
 #[derive(Bundle)]
@@ -69,13 +61,6 @@ pub enum Character {
     ManOld,
     KnightArmed,
     Knight,
-}
-
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
-pub enum Weapon {
-    #[default]
-    BasicStaffOrange,
-    BasicSpear,
 }
 
 #[derive(Resource)]
@@ -212,37 +197,6 @@ impl CharacterBundle {
         };
 
         bundle.sprite_sheet.transform.translation = position.extend(CHARACTER_Z);
-
-        bundle
-    }
-}
-
-impl Default for WeaponBundle {
-    fn default() -> Self {
-        Self {
-            sprite_sheet: SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    custom_size: Some(Vec2::splat(1.0)),
-                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, 0.0)),
-                    ..default()
-                },
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),
-                ..Default::default()
-            },
-            weapon: Weapon::BasicSpear,
-        }
-    }
-}
-
-impl WeaponBundle {
-    pub fn new(position: Vec2, weapon: Weapon, scale: Vec2) -> Self {
-        let mut bundle = WeaponBundle {
-            weapon,
-            ..default()
-        };
-
-        bundle.sprite_sheet.transform.translation = position.extend(WEAPON_Z);
-        bundle.sprite_sheet.transform.scale = scale.extend(1.0);
 
         bundle
     }
