@@ -24,8 +24,8 @@ fn main() {
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)),
         )
         .add_startup_system(setup)
-        .add_plugin(ArtPlugin)
         .add_plugin(CombatPlugin)
+        .add_plugin(ArtPlugin)
         .run();
 }
 

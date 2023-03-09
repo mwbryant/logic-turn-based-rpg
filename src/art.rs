@@ -1,4 +1,5 @@
 use bevy::sprite::Anchor;
+use bevy_easings::Lerp;
 
 use crate::prelude::*;
 
@@ -7,6 +8,9 @@ pub struct ArtPlugin;
 impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
+            .add_system(spawn_player_weapon.in_schedule(OnEnter(CombatState::PlayerAttacking)))
+            .add_system(despawn_player_weapon.in_schedule(OnExit(CombatState::PlayerAttacking)))
+            .add_system(animate_player_melee.in_set(OnUpdate(CombatState::PlayerAttacking)))
             .add_system(update_art)
             .register_type::<Icon>()
             .register_type::<Character>();
@@ -26,6 +30,10 @@ pub struct IconBundle {
     sprite_sheet: SpriteSheetBundle,
     icon: Icon,
 }
+
+//Used for the weapon in the players hand during an attack animation
+#[derive(Component)]
+pub struct WeaponGraphic;
 
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 pub const ICON_SHEET_WIDTH: usize = 34;
@@ -70,6 +78,79 @@ pub struct SpriteSheetMaps {
     pub characters: HashMap<Character, usize>,
     pub weapons: HashMap<Weapon, usize>,
     pub icons: HashMap<Icon, usize>,
+}
+
+//TODO player location determined from config somehow
+fn animate_player_melee(
+    mut player: Query<(&mut Transform, &Children), With<Player>>,
+    attack: Query<&MeleeAttack>,
+    mut weapon: Query<&mut Transform, (With<Weapon>, Without<Player>)>,
+) {
+    let (mut transform, children) = player.get_single_mut().expect("No Player");
+
+    let child = children
+        .iter()
+        .find(|&&child| weapon.contains(child))
+        .expect("Player doesn't have a weapon sprite");
+    let mut child_transform = weapon.get_mut(*child).unwrap();
+
+    if let Ok(attack) = attack.get_single() {
+        match attack.stage {
+            AttackStages::Warmup => {
+                transform.translation.x = (-3.0).lerp(&1.9, &attack.warmup_timer.percent());
+                child_transform.rotation = Quat::from_rotation_z(0.0);
+            }
+            AttackStages::Action => {
+                transform.translation.x = 1.9;
+                //Probably a more elegant solution to this
+                if attack.action_timer.percent() < 0.5 {
+                    child_transform.rotation = Quat::from_rotation_z(Lerp::lerp(
+                        &0.0,
+                        &-1.0,
+                        &attack.action_timer.percent(),
+                    ));
+                } else {
+                    child_transform.rotation = Quat::from_rotation_z(Lerp::lerp(
+                        &-1.0,
+                        &0.0,
+                        &attack.action_timer.percent(),
+                    ));
+                }
+            }
+            AttackStages::CoolDown => {
+                transform.translation.x = (1.9).lerp(&-3.0, &attack.cool_down_timer.percent());
+                child_transform.rotation = Quat::from_rotation_z(0.0);
+            }
+        }
+    }
+}
+
+//TODO this can probably be a generic system over the With constraint
+fn despawn_player_weapon(mut commands: Commands, graphics: Query<Entity, With<WeaponGraphic>>) {
+    for entity in &graphics {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+fn spawn_player_weapon(
+    mut commands: Commands,
+    locked_attack: Query<&Weapon, With<PlayerAttack>>,
+    player: Query<Entity, With<Player>>,
+) {
+    let weapon = locked_attack.get_single().expect("No attack selected :(");
+    let player = player.get_single().expect("No Player");
+    let new_ent = commands
+        .spawn((
+            WeaponBundle::new(
+                //FIXME magic config
+                Vec2::new(0.35, -0.37),
+                weapon.clone(),
+                Vec2::splat(1.0),
+            ),
+            WeaponGraphic,
+        ))
+        .id();
+    commands.entity(player).add_child(new_ent);
 }
 
 fn update_art(

@@ -45,7 +45,7 @@ impl Default for WeaponBundle {
             sprite_sheet: SpriteSheetBundle {
                 sprite: TextureAtlasSprite {
                     custom_size: Some(Vec2::splat(1.0)),
-                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, 0.0)),
+                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, -0.5)),
                     ..default()
                 },
                 transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),

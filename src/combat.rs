@@ -74,7 +74,7 @@ pub struct HitEvent {
 }
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
-enum CombatState {
+pub enum CombatState {
     #[default]
     PlayerSelecting,
     PlayerAttacking,
@@ -97,11 +97,11 @@ pub enum ActionTiming {
 
 #[derive(Component)]
 pub struct MeleeAttack {
-    stage: AttackStages,
-    action_input: ActionTiming,
-    warmup_timer: Timer,
-    action_timer: Timer,
-    cool_down_timer: Timer,
+    pub stage: AttackStages,
+    pub action_input: ActionTiming,
+    pub warmup_timer: Timer,
+    pub action_timer: Timer,
+    pub cool_down_timer: Timer,
 }
 
 fn start_player_attack(

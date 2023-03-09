@@ -14,3 +14,4 @@ bevy = {version = "0.10", features = ["dynamic_linking"] }
 bevy-inspector-egui = { version = "0.18.0", default-features = false, features = ["bevy_pbr"] }
 egui_dock = "0.4"
 egui-gizmo = "0.10"
+bevy_easings = "0.10"
