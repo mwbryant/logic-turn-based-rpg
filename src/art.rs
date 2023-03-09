@@ -1,4 +1,3 @@
-use bevy::sprite::Anchor;
 use bevy_easings::Lerp;
 
 use crate::prelude::*;

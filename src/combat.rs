@@ -1,5 +1,3 @@
-use bevy::input::keyboard;
-
 use crate::prelude::*;
 
 pub struct CombatPlugin;
@@ -17,13 +15,21 @@ impl Plugin for CombatPlugin {
                     .in_schedule(OnExit(CombatState::PlayerSelecting)),
             )
             .add_system(start_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
+            .add_system(start_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
+            .add_system(despawn_melee_attack.in_schedule(OnExit(CombatState::PlayerAttacking)))
+            .add_system(despawn_melee_attack.in_schedule(OnExit(CombatState::EnemyAttacking)))
             .add_systems(
                 (player_select_attack, update_icon_location)
                     .in_set(OnUpdate(CombatState::PlayerSelecting)),
             )
             .add_systems(
-                (player_melee_attack_flow, player_action_timing, damage_enemy)
+                (melee_attack_flow, player_action_timing, deal_damage)
                     .in_set(OnUpdate(CombatState::PlayerAttacking)),
+            )
+            //I wish I could and an in set
+            .add_systems(
+                (melee_attack_flow, player_action_timing, deal_damage)
+                    .in_set(OnUpdate(CombatState::EnemyAttacking)),
             )
             .register_type::<CombatStats>()
             .register_type::<Player>()
@@ -62,6 +68,9 @@ pub struct SelectionIcon;
 pub struct PlayerAttack;
 
 #[derive(Component, Reflect)]
+pub struct EnemyAttack;
+
+#[derive(Component, Reflect)]
 pub struct WeaponIcon(i32);
 
 #[derive(Component, Reflect)]
@@ -71,6 +80,7 @@ pub struct Enemy {
 
 pub struct HitEvent {
     action: ActionTiming,
+    combat_state: CombatState,
 }
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
@@ -87,7 +97,7 @@ pub enum AttackStages {
     CoolDown,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum ActionTiming {
     NotEntered,
     Early,
@@ -102,6 +112,26 @@ pub struct MeleeAttack {
     pub warmup_timer: Timer,
     pub action_timer: Timer,
     pub cool_down_timer: Timer,
+}
+
+fn start_enemy_attack(mut commands: Commands, enemy: Query<&Enemy>) {
+    //TODO attack based on enemy
+    let _enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
+    commands.spawn(MeleeAttack {
+        stage: AttackStages::Warmup,
+        action_input: ActionTiming::NotEntered,
+        warmup_timer: Timer::from_seconds(1.0, TimerMode::Once),
+        action_timer: Timer::from_seconds(0.2, TimerMode::Once),
+        cool_down_timer: Timer::from_seconds(0.7, TimerMode::Once),
+    });
+}
+
+// TODO make this a generic system
+fn despawn_melee_attack(mut commands: Commands, attack: Query<Entity, With<MeleeAttack>>) {
+    for entity in &attack {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 fn start_player_attack(
@@ -148,17 +178,47 @@ fn player_action_timing(mut attack: Query<&mut MeleeAttack>, keyboard: Res<Input
     }
 }
 
-fn damage_enemy(mut hit_event: EventReader<HitEvent>) {
+fn deal_damage(
+    mut hit_event: EventReader<HitEvent>,
+    mut player: Query<&mut CombatStats, With<Player>>,
+    mut enemy: Query<&mut CombatStats, (With<Enemy>, Without<Player>)>,
+) {
     for hit in hit_event.iter() {
-        info!("HIT");
+        let mut player = player.get_single_mut().expect("No player");
+        let mut enemy = enemy.get_single_mut().expect("No enemy");
+
+        match hit.combat_state {
+            CombatState::PlayerSelecting => unreachable!("Can't hit in menu"),
+            CombatState::PlayerAttacking => {
+                let damage = (if matches!(hit.action, ActionTiming::Critical) {
+                    (player.attack - enemy.defense) * 2
+                } else {
+                    player.attack - enemy.defense
+                })
+                .clamp(0, 99);
+                info!("player hit, {:?} {:?}", hit.action, damage);
+                enemy.health -= damage;
+            }
+            CombatState::EnemyAttacking => {
+                let damage = (if matches!(hit.action, ActionTiming::Critical) {
+                    (enemy.attack - player.defense) / 2
+                } else {
+                    enemy.attack - player.defense
+                })
+                .clamp(0, 99);
+                info!("enemy hit, {:?} {:?}", hit.action, damage);
+                player.health -= damage;
+            }
+        }
     }
 }
 
-fn player_melee_attack_flow(
+fn melee_attack_flow(
     mut attack: Query<&mut MeleeAttack>,
     time: Res<Time>,
     mut hit_event: EventWriter<HitEvent>,
-    mut state: ResMut<NextState<CombatState>>,
+    state: Res<State<CombatState>>,
+    mut next_state: ResMut<NextState<CombatState>>,
 ) {
     for mut attack in &mut attack {
         match attack.stage {
@@ -173,6 +233,7 @@ fn player_melee_attack_flow(
                 if attack.action_timer.just_finished() {
                     hit_event.send(HitEvent {
                         action: attack.action_input,
+                        combat_state: state.0.clone(),
                     });
                     attack.stage = AttackStages::CoolDown;
                 }
@@ -181,7 +242,11 @@ fn player_melee_attack_flow(
                 attack.cool_down_timer.tick(time.delta());
                 if attack.cool_down_timer.just_finished() {
                     info!("Attack Complete");
-                    state.set(CombatState::EnemyAttacking);
+                    match state.0 {
+                        CombatState::PlayerSelecting => unreachable!("Can't finish attack in menu"),
+                        CombatState::PlayerAttacking => next_state.set(CombatState::EnemyAttacking),
+                        CombatState::EnemyAttacking => next_state.set(CombatState::PlayerSelecting),
+                    }
                 }
             }
         }
