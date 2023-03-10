@@ -1,6 +1,6 @@
 use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use logic_bevy_new_scheduling::prelude::*;
+use logic_turn_based_rpg::prelude::*;
 
 pub const WIDTH: f32 = 1080.0;
 pub const HEIGHT: f32 = 720.0;

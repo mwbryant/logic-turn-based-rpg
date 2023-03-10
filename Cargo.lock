@@ -2208,7 +2208,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "logic-bevy-new-scheduling"
+name = "logic-turn-based-rpg"
 version = "0.1.0"
 dependencies = [
  "bevy",
