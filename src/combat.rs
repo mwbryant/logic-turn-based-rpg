@@ -1,6 +1,16 @@
+use std::f32::consts::PI;
+
 use crate::prelude::*;
 
 pub struct CombatPlugin;
+
+#[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
+pub enum CombatState {
+    #[default]
+    PlayerSelecting,
+    PlayerAttacking,
+    EnemyAttacking,
+}
 
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
@@ -13,7 +23,7 @@ impl Plugin for CombatPlugin {
                 (
                     lock_in_attack,
                     despawn_with::<SelectionIcon>,
-                    despawn_with::<WeaponIcon>,
+                    despawn_with::<WeaponIconSlot>,
                 )
                     .chain()
                     .in_schedule(OnExit(CombatState::PlayerSelecting)),
@@ -44,7 +54,7 @@ impl Plugin for CombatPlugin {
             .register_type::<CurrentSelectedMenuItem>()
             .register_type::<SelectionIcon>()
             .register_type::<PlayerAttack>()
-            .register_type::<WeaponIcon>()
+            .register_type::<WeaponIconSlot>()
             .register_type::<Enemy>();
     }
 }
@@ -79,7 +89,7 @@ pub struct PlayerAttack;
 pub struct EnemyAttack;
 
 #[derive(Component, Reflect)]
-pub struct WeaponIcon(i32);
+pub struct WeaponIconSlot(i32);
 
 #[derive(Component, Reflect)]
 pub struct Enemy {
@@ -89,14 +99,6 @@ pub struct Enemy {
 pub struct HitEvent {
     action: ActionTiming,
     combat_state: CombatState,
-}
-
-#[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
-pub enum CombatState {
-    #[default]
-    PlayerSelecting,
-    PlayerAttacking,
-    EnemyAttacking,
 }
 
 pub enum AttackStages {
@@ -137,7 +139,7 @@ fn start_enemy_attack(mut commands: Commands, enemy: Query<&Enemy>) {
         AttackAnimation {
             starting_x: 3.0,
             ending_x: -1.9,
-            max_weapon_rotation: 1.0,
+            max_weapon_rotation: 6.0 * PI,
         },
     ));
 }
@@ -272,7 +274,7 @@ fn melee_attack_flow(
 fn lock_in_attack(
     mut commands: Commands,
     selection: Query<&CurrentSelectedMenuItem, With<SelectionIcon>>,
-    weapon_icons: Query<(&WeaponIcon, &Weapon)>,
+    weapon_icons: Query<(&WeaponIconSlot, &Weapon)>,
 ) {
     let selection = selection.single();
     let slot = selection.selection.rem_euclid(selection.slots);
@@ -290,7 +292,7 @@ fn lock_in_attack(
 fn spawn_player_attack_icons(mut commands: Commands) {
     commands.spawn((
         WeaponBundle::new(Vec2::new(-3.0, 1.7), Weapon::BasicSpear, Vec2::splat(0.75)),
-        WeaponIcon(0),
+        WeaponIconSlot(0),
     ));
 
     commands.spawn((
@@ -299,7 +301,7 @@ fn spawn_player_attack_icons(mut commands: Commands) {
             Weapon::BasicStaffOrange,
             Vec2::splat(0.75),
         ),
-        WeaponIcon(1),
+        WeaponIconSlot(1),
     ));
 
     commands.spawn((
