@@ -29,7 +29,7 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     let mut camera = Camera2dBundle::default();
     let size = 10.0;
 
@@ -46,6 +46,7 @@ fn setup(mut commands: Commands) {
             attack: 1,
             defense: 0,
         },
+        Name::new("Player"),
     ));
 
     commands.spawn((
@@ -59,5 +60,18 @@ fn setup(mut commands: Commands) {
             attack: 1,
             defense: 0,
         },
+        Name::new("Enemy"),
+    ));
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(11.0, 7.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0.0, -1.2, BACKGROUND_Z),
+            texture: assets.load("Stage.png"),
+            ..default()
+        },
+        Name::new("Background"),
     ));
 }
