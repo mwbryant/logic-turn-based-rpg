@@ -14,14 +14,16 @@ impl Plugin for CombatAnimationPlugin {
                 despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::EnemyAttacking)),
             )
             .add_system(animate_melee::<Player>.in_set(OnUpdate(CombatState::PlayerAttacking)))
-            .add_system(animate_melee::<Enemy>.in_set(OnUpdate(CombatState::EnemyAttacking)));
+            .add_system(animate_melee::<Enemy>.in_set(OnUpdate(CombatState::EnemyAttacking)))
+            .add_system(animate_ranged::<Player>.in_set(OnUpdate(CombatState::PlayerAttacking)))
+            .add_system(animate_ranged::<Enemy>.in_set(OnUpdate(CombatState::EnemyAttacking)));
     }
 }
 
 //TODO player location determined from config somehow
 fn animate_melee<T: Component>(
     mut attacker: Query<(&mut Transform, &Children), With<T>>,
-    attack: Query<(&MeleeAttack, &AttackAnimation)>,
+    attack: Query<(&Attack, &AttackAnimation)>,
     mut weapon: Query<&mut Transform, (With<Weapon>, Without<T>)>,
 ) {
     let (mut transform, children) = attacker.get_single_mut().expect("No or multiple attackers");
@@ -33,6 +35,9 @@ fn animate_melee<T: Component>(
     let mut child_transform = weapon.get_mut(*child).unwrap();
 
     if let Ok((attack, animation)) = attack.get_single() {
+        if !matches!(attack.attack_type, WeaponAttackType::Melee) {
+            return;
+        }
         match attack.stage {
             AttackStages::Warmup => {
                 transform.translation.x = (animation.starting_x)
@@ -61,6 +66,77 @@ fn animate_melee<T: Component>(
                     .lerp(&animation.starting_x, &attack.cool_down_timer.percent());
                 child_transform.rotation = Quat::from_rotation_z(0.0);
             }
+        }
+    }
+}
+
+fn animate_ranged<T: Component>(
+    //This system shouldn't be responisble for spawning the fireball..
+    mut commands: Commands,
+    mut attacker: Query<(&mut Transform, &Children), With<T>>,
+    attack: Query<(&Attack, &AttackAnimation)>,
+    mut projectile: Query<
+        (Entity, &mut Transform),
+        (
+            With<WeaponGraphic>,
+            With<Projectile>,
+            Without<T>,
+            Without<Weapon>,
+        ),
+    >,
+    mut weapon: Query<&mut Transform, (With<Weapon>, Without<T>)>,
+) {
+    let (mut _transform, children) = attacker.get_single_mut().expect("No or multiple attackers");
+
+    let child = children
+        .iter()
+        .find(|&&child| weapon.contains(child))
+        .expect("Attacker doesn't have a weapon sprite");
+    let mut child_transform = weapon.get_mut(*child).unwrap();
+
+    if let Ok((attack, animation)) = attack.get_single() {
+        if !matches!(attack.attack_type, WeaponAttackType::Range) {
+            return;
+        }
+        match attack.stage {
+            AttackStages::Warmup => {
+                //Probably a more elegant solution to this
+                if attack.warmup_timer.percent() < 0.2 {
+                    child_transform.rotation = Quat::from_rotation_z(Lerp::lerp(
+                        &0.0,
+                        &animation.max_weapon_rotation,
+                        &attack.warmup_timer.percent(),
+                    ));
+                } else {
+                    if projectile.iter().count() == 0 {
+                        //spawn projectile
+                        commands.spawn((
+                            PlanetBundle::new(Vec2::ZERO, Planet::Fireball),
+                            Projectile,
+                            WeaponGraphic,
+                        ));
+                    } else {
+                        let (_, mut projectile_transform) =
+                            projectile.get_single_mut().expect("too many projectiles");
+                        //TODO should have a more resilent way to do this, maybe more stages
+                        let percent = (attack.warmup_timer.percent() - 0.2) * (1.0 / 0.8);
+                        projectile_transform.translation.x =
+                            (animation.starting_x).lerp(&animation.ending_x, &percent);
+                    }
+                    child_transform.rotation = Quat::from_rotation_z(Lerp::lerp(
+                        &animation.max_weapon_rotation,
+                        &0.0,
+                        &attack.warmup_timer.percent(),
+                    ));
+                }
+            }
+            AttackStages::Action => {
+                child_transform.rotation = Quat::from_rotation_z(0.0);
+                if let Ok((entity, _)) = projectile.get_single_mut() {
+                    commands.entity(entity).despawn_recursive();
+                }
+            }
+            AttackStages::CoolDown => {}
         }
     }
 }

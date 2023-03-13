@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use crate::prelude::*;
 
 pub struct TurnBasedPlugin;
@@ -24,20 +22,7 @@ fn spawn_enemy_attack(mut commands: Commands, enemy: Query<&Enemy>) {
     //TODO attack based on enemy
     let _enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    commands.spawn((
-        MeleeAttack {
-            stage: AttackStages::Warmup,
-            action_input: ActionTiming::NotEntered,
-            warmup_timer: Timer::from_seconds(1.0, TimerMode::Once),
-            action_timer: Timer::from_seconds(0.2, TimerMode::Once),
-            cool_down_timer: Timer::from_seconds(0.7, TimerMode::Once),
-        },
-        AttackAnimation {
-            starting_x: 3.0,
-            ending_x: -1.9,
-            max_weapon_rotation: 6.0 * PI,
-        },
-    ));
+    commands.spawn(Weapon::BasicSpear.get_attack_bundle(false));
 }
 
 fn spawn_player_attack(
@@ -46,30 +31,13 @@ fn spawn_player_attack(
 ) {
     let (entity, weapon) = locked_attack.get_single().expect("No attack!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    let attack_type = weapon.attack_type();
-    match attack_type {
-        WeaponAttackType::Melee => {
-            commands.entity(entity).insert((
-                MeleeAttack {
-                    stage: AttackStages::Warmup,
-                    action_input: ActionTiming::NotEntered,
-                    warmup_timer: Timer::from_seconds(1.0, TimerMode::Once),
-                    action_timer: Timer::from_seconds(0.2, TimerMode::Once),
-                    cool_down_timer: Timer::from_seconds(0.7, TimerMode::Once),
-                },
-                //FIXME this should be from a bundle or something...
-                AttackAnimation {
-                    starting_x: -3.0,
-                    ending_x: 1.9,
-                    max_weapon_rotation: -1.0,
-                },
-            ));
-        }
-        WeaponAttackType::Range => todo!(),
-    }
+
+    commands
+        .entity(entity)
+        .insert(weapon.get_attack_bundle(true));
 }
 
-fn player_action_timing(mut attack: Query<&mut MeleeAttack>, keyboard: Res<Input<KeyCode>>) {
+fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyCode>>) {
     for mut attack in &mut attack {
         if keyboard.just_pressed(KeyCode::Space) && attack.action_input == ActionTiming::NotEntered
         {

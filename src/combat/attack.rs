@@ -1,20 +1,18 @@
 use crate::prelude::*;
 
-pub struct MeleePlugin;
+pub struct AttackPlugin;
 
-impl Plugin for MeleePlugin {
+impl Plugin for AttackPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            despawn_with::<MeleeAttack>.in_schedule(OnExit(CombatState::PlayerAttacking)),
-        )
-        .add_system(despawn_with::<MeleeAttack>.in_schedule(OnExit(CombatState::EnemyAttacking)))
-        .add_system(melee_attack_flow.in_set(OnUpdate(CombatState::PlayerAttacking)))
-        .add_system(melee_attack_flow.in_set(OnUpdate(CombatState::EnemyAttacking)));
+        app.add_system(despawn_with::<Attack>.in_schedule(OnExit(CombatState::PlayerAttacking)))
+            .add_system(despawn_with::<Attack>.in_schedule(OnExit(CombatState::EnemyAttacking)))
+            .add_system(attack_flow.in_set(OnUpdate(CombatState::PlayerAttacking)))
+            .add_system(attack_flow.in_set(OnUpdate(CombatState::EnemyAttacking)));
     }
 }
 
-fn melee_attack_flow(
-    mut attack: Query<&mut MeleeAttack>,
+fn attack_flow(
+    mut attack: Query<&mut Attack>,
     time: Res<Time>,
     mut hit_event: EventWriter<HitEvent>,
     state: Res<State<CombatState>>,

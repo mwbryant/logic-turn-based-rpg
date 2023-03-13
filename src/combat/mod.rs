@@ -1,13 +1,14 @@
 pub mod animation;
-pub mod melee;
+pub mod attack;
 pub mod selection;
 pub mod turn_based;
+pub mod weapons;
 
 use crate::prelude::*;
 
 use self::{
-    animation::CombatAnimationPlugin, melee::MeleePlugin, selection::SelectionPlugin,
-    turn_based::TurnBasedPlugin,
+    animation::CombatAnimationPlugin, attack::AttackPlugin, selection::SelectionPlugin,
+    turn_based::TurnBasedPlugin, weapons::WeaponPlugin,
 };
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
@@ -26,9 +27,10 @@ impl Plugin for CombatPlugin {
         app.add_state::<CombatState>()
             .add_event::<HitEvent>()
             .add_plugin(TurnBasedPlugin)
-            .add_plugin(MeleePlugin)
+            .add_plugin(AttackPlugin)
             .add_plugin(SelectionPlugin)
             .add_plugin(CombatAnimationPlugin)
+            .add_plugin(WeaponPlugin)
             .register_type::<CombatStats>()
             .register_type::<Player>()
             .register_type::<CurrentSelectedMenuItem>()
@@ -36,10 +38,38 @@ impl Plugin for CombatPlugin {
             .register_type::<PlayerAttack>()
             .register_type::<EnemyAttack>()
             .register_type::<WeaponIcon>()
-            .register_type::<MeleeAttack>()
+            .register_type::<Attack>()
+            .register_type::<Weapon>()
             .register_type::<AttackAnimation>()
+            .register_type::<Projectile>()
             .register_type::<Enemy>();
     }
+}
+
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+pub enum Weapon {
+    #[default]
+    BasicStaffOrange,
+    BasicSpear,
+}
+
+#[derive(Bundle)]
+pub struct WeaponBundle {
+    #[bundle]
+    sprite_sheet: SpriteSheetBundle,
+    weapon: Weapon,
+}
+
+#[derive(Bundle)]
+pub struct AttackBundle {
+    attack: Attack,
+    animation: AttackAnimation,
+}
+
+#[derive(PartialEq, Eq, Reflect)]
+pub enum WeaponAttackType {
+    Melee,
+    Range,
 }
 
 #[derive(Component, Reflect)]
@@ -87,9 +117,14 @@ pub struct Enemy {
 }
 
 #[derive(Component, Reflect)]
-pub struct MeleeAttack {
+pub struct Projectile;
+
+#[derive(Component, Reflect)]
+pub struct Attack {
+    pub attack_type: WeaponAttackType,
     pub stage: AttackStages,
     pub action_input: ActionTiming,
+    //TODO only use 1 timer, should be more redundant to errors
     pub warmup_timer: Timer,
     pub action_timer: Timer,
     pub cool_down_timer: Timer,

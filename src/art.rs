@@ -25,6 +25,13 @@ pub struct IconBundle {
     icon: Icon,
 }
 
+#[derive(Bundle)]
+pub struct PlanetBundle {
+    #[bundle]
+    sprite_sheet: SpriteSheetBundle,
+    planet: Planet,
+}
+
 //Used for the weapon in the players hand during an attack animation
 #[derive(Component)]
 pub struct WeaponGraphic;
@@ -65,13 +72,22 @@ pub enum Character {
     Knight,
 }
 
+// I use the planet sheet for magic projectiles
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+pub enum Planet {
+    #[default]
+    Fireball,
+}
+
 #[derive(Resource)]
 pub struct SpriteSheetMaps {
     character_atlas: Handle<TextureAtlas>,
     icon_atlas: Handle<TextureAtlas>,
+    planet_atlas: Handle<TextureAtlas>,
     pub characters: HashMap<Character, usize>,
     pub weapons: HashMap<Weapon, usize>,
     pub icons: HashMap<Icon, usize>,
+    pub planets: HashMap<Planet, usize>,
 }
 
 fn update_art(
@@ -88,6 +104,10 @@ fn update_art(
         (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Icon),
         (Without<Character>, Without<Weapon>),
     >,
+    mut planets: Query<
+        (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Planet),
+        (Without<Character>, Without<Weapon>, Without<Icon>),
+    >,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
     for (mut sprite, mut atlas, character) in &mut characters {
@@ -101,6 +121,10 @@ fn update_art(
     for (mut sprite, mut atlas, icon) in &mut icons {
         *atlas = sprite_sheets.icon_atlas.clone();
         sprite.index = sprite_sheets.icons[icon];
+    }
+    for (mut sprite, mut atlas, planet) in &mut planets {
+        *atlas = sprite_sheets.planet_atlas.clone();
+        sprite.index = sprite_sheets.planets[planet];
     }
 }
 
@@ -131,6 +155,17 @@ fn setup_spritesheet_maps(
     );
     let icon_atlas = texture_atlases.add(texture_atlas);
 
+    let texture_handle = asset_server.load("planets/Planets/planet08.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::new(1280.0, 1280.0),
+        1,
+        1,
+        Some(Vec2::splat(0.0)),
+        None,
+    );
+    let planet_atlas = texture_atlases.add(texture_atlas);
+
     let characters = HashMap::from([
         (Character::WhiteBase, 0),
         (Character::WhiteBaseMouth, 1),
@@ -158,14 +193,18 @@ fn setup_spritesheet_maps(
 
     let icons = HashMap::from([(Icon::Pointer, ICON_SHEET_WIDTH * 17)]);
 
+    let planets = HashMap::from([(Planet::Fireball, 0)]);
+
     let weapons = HashMap::from([(Weapon::BasicStaffOrange, 42), (Weapon::BasicSpear, 47)]);
 
     commands.insert_resource(SpriteSheetMaps {
         character_atlas,
         icon_atlas,
+        planet_atlas,
         characters,
         weapons,
         icons,
+        planets,
     });
 }
 
@@ -184,6 +223,35 @@ impl Default for CharacterBundle {
             // Using ..Default::default() gives a proper warning though....
             // https://github.com/bevyengine/bevy/issues/6207
             character: Character::WhiteBase,
+        }
+    }
+}
+
+impl PlanetBundle {
+    pub fn new(position: Vec2, planet: Planet) -> Self {
+        let mut bundle = PlanetBundle {
+            planet,
+            ..default()
+        };
+
+        bundle.sprite_sheet.transform.translation = position.extend(WEAPON_Z);
+
+        bundle
+    }
+}
+
+impl Default for PlanetBundle {
+    fn default() -> Self {
+        Self {
+            sprite_sheet: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::splat(0.5)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),
+                ..Default::default()
+            },
+            planet: Planet::Fireball,
         }
     }
 }
