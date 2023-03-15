@@ -6,8 +6,18 @@ impl Plugin for TurnBasedPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
             .add_system(spawn_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
-            .add_system(check_death.in_schedule(OnExit(CombatState::PlayerAttacking)))
-            .add_system(check_death.in_schedule(OnExit(CombatState::EnemyAttacking)))
+            //This causes a 1 frame entrance into the next attack which spawns the weapon graphics
+            //Also instantly triggers the death again because the exit it triggers causes another death check
+            .add_system(
+                check_death
+                    .in_schedule(OnExit(CombatState::PlayerAttacking))
+                    .in_set(CombatSet::CleanUp),
+            )
+            .add_system(
+                check_death
+                    .in_schedule(OnExit(CombatState::EnemyAttacking))
+                    .in_set(CombatSet::CleanUp),
+            )
             .add_systems(
                 (player_action_timing, deal_damage).in_set(OnUpdate(CombatState::PlayerAttacking)),
             )
@@ -39,22 +49,25 @@ fn spawn_player_attack(
 
 fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyCode>>) {
     for mut attack in &mut attack {
-        if keyboard.just_pressed(KeyCode::Space) && attack.action_input == ActionTiming::NotEntered
+        if keyboard.just_pressed(KeyCode::Space)
+            && attack.action.action_input == ActionTiming::NotEntered
         {
-            match attack.stage {
-                AttackStages::Warmup => {
-                    if attack.warmup_timer.percent() > 0.7 {
-                        attack.action_input = ActionTiming::Early;
+            match attack.stages[attack.current_stage].0 {
+                //FIXME should look at what is the current stage regardless of fixed step flow
+                AttackStage::WalkUp => {
+                    if attack.timer.percent() > 0.7 {
+                        attack.action.action_input = ActionTiming::Early;
                     }
                 }
-                AttackStages::Action => {
-                    attack.action_input = ActionTiming::Critical;
+                AttackStage::Action => {
+                    attack.action.action_input = ActionTiming::Critical;
                 }
-                AttackStages::CoolDown => {
-                    if attack.cool_down_timer.percent() < 0.3 {
-                        attack.action_input = ActionTiming::Late;
+                AttackStage::CoolDown => {
+                    if attack.timer.percent() < 0.3 {
+                        attack.action.action_input = ActionTiming::Late;
                     }
                 }
+                _ => {}
             }
         }
     }

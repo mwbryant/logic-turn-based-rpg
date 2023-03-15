@@ -20,6 +20,13 @@ pub enum CombatState {
     PlayerWins,
 }
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum CombatSet {
+    Logic,
+    Animation,
+    CleanUp,
+}
+
 pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin {
@@ -31,6 +38,8 @@ impl Plugin for CombatPlugin {
             .add_plugin(SelectionPlugin)
             .add_plugin(CombatAnimationPlugin)
             .add_plugin(WeaponPlugin)
+            .configure_set(CombatSet::Logic.before(CombatSet::Animation))
+            .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()
             .register_type::<Player>()
             .register_type::<CurrentSelectedMenuItem>()
@@ -38,7 +47,6 @@ impl Plugin for CombatPlugin {
             .register_type::<PlayerAttack>()
             .register_type::<EnemyAttack>()
             .register_type::<WeaponIcon>()
-            .register_type::<Attack>()
             .register_type::<Weapon>()
             .register_type::<AttackAnimation>()
             .register_type::<Projectile>()
@@ -119,15 +127,19 @@ pub struct Enemy {
 #[derive(Component, Reflect)]
 pub struct Projectile;
 
-#[derive(Component, Reflect)]
+#[derive(Component)]
 pub struct Attack {
     pub attack_type: WeaponAttackType,
-    pub stage: AttackStages,
+    pub current_stage: usize,
+    pub stages: Vec<(AttackStage, f32)>,
+    pub action: Action,
+    pub timer: Timer,
+}
+
+pub struct Action {
+    //TODO action type
+    pub stage: AttackStage,
     pub action_input: ActionTiming,
-    //TODO only use 1 timer, should be more redundant to errors
-    pub warmup_timer: Timer,
-    pub action_timer: Timer,
-    pub cool_down_timer: Timer,
 }
 
 pub struct HitEvent {
@@ -135,9 +147,10 @@ pub struct HitEvent {
     combat_state: CombatState,
 }
 
-#[derive(Reflect)]
-pub enum AttackStages {
-    Warmup,
+#[derive(Reflect, PartialEq, Eq)]
+pub enum AttackStage {
+    Charge,
+    WalkUp,
     Action,
     CoolDown,
 }

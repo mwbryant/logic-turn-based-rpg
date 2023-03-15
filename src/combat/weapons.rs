@@ -42,20 +42,33 @@ impl Weapon {
 
         let attack = match self {
             Weapon::BasicStaffOrange => Attack {
+                current_stage: 0,
+                stages: vec![
+                    (AttackStage::Charge, 0.2),
+                    (AttackStage::WalkUp, 0.7),
+                    (AttackStage::Action, 0.2),
+                    (AttackStage::CoolDown, 0.2),
+                ],
+                action: Action {
+                    stage: AttackStage::Action,
+                    action_input: ActionTiming::NotEntered,
+                },
                 attack_type: self.attack_type(),
-                stage: AttackStages::Warmup,
-                action_input: ActionTiming::NotEntered,
-                warmup_timer: Timer::from_seconds(1.0, TimerMode::Once),
-                action_timer: Timer::from_seconds(0.2, TimerMode::Once),
-                cool_down_timer: Timer::from_seconds(0.1, TimerMode::Once),
+                timer: Timer::from_seconds(0.2, TimerMode::Once),
             },
             Weapon::BasicSpear => Attack {
+                current_stage: 0,
+                stages: vec![
+                    (AttackStage::WalkUp, 0.7),
+                    (AttackStage::Action, 0.2),
+                    (AttackStage::CoolDown, 0.5),
+                ],
+                action: Action {
+                    stage: AttackStage::Action,
+                    action_input: ActionTiming::NotEntered,
+                },
                 attack_type: self.attack_type(),
-                stage: AttackStages::Warmup,
-                action_input: ActionTiming::NotEntered,
-                warmup_timer: Timer::from_seconds(1.0, TimerMode::Once),
-                action_timer: Timer::from_seconds(0.2, TimerMode::Once),
-                cool_down_timer: Timer::from_seconds(0.7, TimerMode::Once),
+                timer: Timer::from_seconds(0.7, TimerMode::Once),
             },
         };
 
