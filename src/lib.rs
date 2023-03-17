@@ -13,4 +13,5 @@ pub mod prelude {
     pub const BACKGROUND_Z: f32 = 10.0;
     pub const WEAPON_Z: f32 = 150.0;
     pub const ICON_Z: f32 = 850.0;
+    pub const PARTICLE_Z: f32 = 750.0;
 }

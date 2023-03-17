@@ -1,5 +1,6 @@
 pub mod animation;
 pub mod attack;
+pub mod player_wins;
 pub mod selection;
 pub mod turn_based;
 pub mod weapons;
@@ -7,8 +8,8 @@ pub mod weapons;
 use crate::prelude::*;
 
 use self::{
-    animation::CombatAnimationPlugin, attack::AttackPlugin, selection::SelectionPlugin,
-    turn_based::TurnBasedPlugin, weapons::WeaponPlugin,
+    animation::CombatAnimationPlugin, attack::AttackPlugin, player_wins::PlayerWinsPlugin,
+    selection::SelectionPlugin, turn_based::TurnBasedPlugin, weapons::WeaponPlugin,
 };
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
@@ -38,6 +39,7 @@ impl Plugin for CombatPlugin {
             .add_plugin(SelectionPlugin)
             .add_plugin(CombatAnimationPlugin)
             .add_plugin(WeaponPlugin)
+            .add_plugin(PlayerWinsPlugin)
             .configure_set(CombatSet::Logic.before(CombatSet::Animation))
             .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()
@@ -48,6 +50,7 @@ impl Plugin for CombatPlugin {
             .register_type::<EnemyAttack>()
             .register_type::<WeaponIcon>()
             .register_type::<Weapon>()
+            .register_type::<VictoryParticle>()
             .register_type::<AttackAnimation>()
             .register_type::<Projectile>()
             .register_type::<Enemy>();
@@ -109,6 +112,9 @@ pub struct CurrentSelectedMenuItem {
 
 #[derive(Component, Reflect)]
 pub struct SelectionIcon;
+
+#[derive(Component, Reflect)]
+pub struct VictoryParticle;
 
 #[derive(Component, Reflect)]
 pub struct PlayerAttack;
