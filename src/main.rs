@@ -1,4 +1,6 @@
-use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
+use bevy::{
+    input::common_conditions::input_toggle_active, log::LogPlugin, render::camera::ScalingMode,
+};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
@@ -6,27 +8,28 @@ pub const WIDTH: f32 = 1080.0;
 pub const HEIGHT: f32 = 720.0;
 
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(ImagePlugin::default_nearest())
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Logic Game".into(),
-                        resolution: (WIDTH, HEIGHT).into(),
-                        resizable: false,
-                        ..default()
-                    }),
+    let mut app = App::new();
+
+    app.add_plugins(
+        DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Logic Game".into(),
+                    resolution: (WIDTH, HEIGHT).into(),
+                    resizable: false,
                     ..default()
                 }),
-        )
-        .add_plugin(
-            WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)),
-        )
-        .add_startup_system(setup)
-        .add_plugin(CombatPlugin)
-        .add_plugin(ArtPlugin)
-        .run();
+                ..default()
+            })
+            .build(),
+    )
+    .add_plugin(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)))
+    .add_startup_system(setup)
+    .add_plugin(CombatPlugin)
+    .add_plugin(ArtPlugin);
+
+    app.run();
 }
 
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {

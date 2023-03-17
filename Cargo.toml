@@ -15,3 +15,4 @@ bevy-inspector-egui = { version = "0.18.0", default-features = false, features =
 egui_dock = "0.4"
 egui-gizmo = "0.10"
 bevy_easings = "0.10"
+bevy_mod_debugdump = "0.7"
