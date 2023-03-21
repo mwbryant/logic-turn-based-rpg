@@ -57,18 +57,12 @@ impl Plugin for CombatPlugin {
     }
 }
 
+//XXX where does weapon declaration belong
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Weapon {
     #[default]
     BasicStaffOrange,
     BasicSpear,
-}
-
-#[derive(Bundle)]
-pub struct WeaponBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    weapon: Weapon,
 }
 
 #[derive(Bundle)]

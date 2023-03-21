@@ -75,34 +75,3 @@ impl Weapon {
         AttackBundle { attack, animation }
     }
 }
-
-impl Default for WeaponBundle {
-    fn default() -> Self {
-        Self {
-            sprite_sheet: SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    custom_size: Some(Vec2::splat(1.0)),
-                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, -0.5)),
-                    ..default()
-                },
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),
-                ..Default::default()
-            },
-            weapon: Weapon::BasicSpear,
-        }
-    }
-}
-
-impl WeaponBundle {
-    pub fn new(position: Vec2, weapon: Weapon, scale: Vec2) -> Self {
-        let mut bundle = WeaponBundle {
-            weapon,
-            ..default()
-        };
-
-        bundle.sprite_sheet.transform.translation = position.extend(WEAPON_Z);
-        bundle.sprite_sheet.transform.scale = scale.extend(1.0);
-
-        bundle
-    }
-}

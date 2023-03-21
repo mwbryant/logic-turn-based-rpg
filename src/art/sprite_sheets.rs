@@ -1,93 +1,14 @@
+use bevy::sprite::Anchor;
+
 use crate::prelude::*;
 
-pub struct ArtPlugin;
+pub struct SpriteSheetPlugin;
 
-impl Plugin for ArtPlugin {
+impl Plugin for SpriteSheetPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_spritesheet_maps.in_base_set(StartupSet::PreStartup))
-            .add_system(update_art)
-            .register_type::<Icon>()
-            .register_type::<Character>();
+            .add_system(update_art);
     }
-}
-
-#[derive(Bundle)]
-pub struct CharacterBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    character: Character,
-}
-
-#[derive(Bundle)]
-pub struct IconBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    icon: Icon,
-}
-
-#[derive(Bundle)]
-pub struct PlanetBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    planet: Planet,
-}
-
-//Used for the weapon in the players hand during an attack animation
-#[derive(Component)]
-pub struct WeaponGraphic;
-
-pub const CHARACTER_SHEET_WIDTH: usize = 54;
-pub const ICON_SHEET_WIDTH: usize = 34;
-
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
-pub enum Icon {
-    #[default]
-    Pointer,
-}
-
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
-pub enum Character {
-    #[default]
-    WhiteBase,
-    WhiteBaseMouth,
-    TanBase,
-    TanBaseMouth,
-    BlackBase,
-    BlackBaseMouth,
-    GreenBase,
-    GreenBaseMouth,
-    WomanBraid,
-    WomanOld,
-    ManStrap,
-    ManBeard,
-    WomanBraidAlt,
-    WomanTwoBraid,
-    ManMohawk,
-    ManBaldish,
-    WomanRedhead,
-    WomanSoldier,
-    Jester,
-    ManOld,
-    KnightArmed,
-    Knight,
-}
-
-// I use the planet sheet for magic projectiles
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
-pub enum Planet {
-    #[default]
-    Fireball,
-}
-
-#[derive(Resource)]
-pub struct SpriteSheetMaps {
-    character_atlas: Handle<TextureAtlas>,
-    icon_atlas: Handle<TextureAtlas>,
-    planet_atlas: Handle<TextureAtlas>,
-    pub characters: HashMap<Character, usize>,
-    pub weapons: HashMap<Weapon, usize>,
-    pub icons: HashMap<Icon, usize>,
-    pub planets: HashMap<Planet, usize>,
 }
 
 fn update_art(
@@ -290,6 +211,37 @@ impl IconBundle {
         let mut bundle = IconBundle { icon, ..default() };
 
         bundle.sprite_sheet.transform.translation = position.extend(ICON_Z);
+        bundle.sprite_sheet.transform.scale = scale.extend(1.0);
+
+        bundle
+    }
+}
+
+impl Default for WeaponBundle {
+    fn default() -> Self {
+        Self {
+            sprite_sheet: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::splat(1.0)),
+                    anchor: Anchor::Custom(Vec2::new(-5.0 / 16.0, -0.5)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, WEAPON_Z)),
+                ..Default::default()
+            },
+            weapon: Weapon::BasicSpear,
+        }
+    }
+}
+
+impl WeaponBundle {
+    pub fn new(position: Vec2, weapon: Weapon, scale: Vec2) -> Self {
+        let mut bundle = WeaponBundle {
+            weapon,
+            ..default()
+        };
+
+        bundle.sprite_sheet.transform.translation = position.extend(WEAPON_Z);
         bundle.sprite_sheet.transform.scale = scale.extend(1.0);
 
         bundle
