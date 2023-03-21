@@ -1,5 +1,6 @@
 pub mod animation;
 pub mod attack;
+pub mod graphic_effects;
 pub mod player_wins;
 pub mod selection;
 pub mod turn_based;
@@ -8,7 +9,7 @@ pub mod weapons;
 use crate::prelude::*;
 
 use self::{
-    animation::CombatAnimationPlugin, attack::AttackPlugin, player_wins::PlayerWinsPlugin,
+    animation::CombatAnimationPlugin, attack::AttackPlugin, graphic_effects::GraphicEffectsPlugin,
     selection::SelectionPlugin, turn_based::TurnBasedPlugin, weapons::WeaponPlugin,
 };
 
@@ -39,7 +40,7 @@ impl Plugin for CombatPlugin {
             .add_plugin(SelectionPlugin)
             .add_plugin(CombatAnimationPlugin)
             .add_plugin(WeaponPlugin)
-            .add_plugin(PlayerWinsPlugin)
+            .add_plugin(GraphicEffectsPlugin)
             .configure_set(CombatSet::Logic.before(CombatSet::Animation))
             .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()

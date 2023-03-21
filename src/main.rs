@@ -64,6 +64,19 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("Enemy"),
     ));
+
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(0.1, 0.1)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0.0, 0.0, 999.9),
+            ..default()
+        },
+        Name::new("WhiteDot"),
+    ));
+
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
