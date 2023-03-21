@@ -65,6 +65,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         Name::new("Enemy"),
     ));
 
+    /*
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -76,6 +77,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("WhiteDot"),
     ));
+    */
 
     commands.spawn((
         SpriteBundle {

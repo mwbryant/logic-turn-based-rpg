@@ -35,6 +35,7 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<CombatState>()
             .add_event::<HitEvent>()
+            .add_event::<DeathEvent>()
             .add_plugin(TurnBasedPlugin)
             .add_plugin(AttackPlugin)
             .add_plugin(SelectionPlugin)
@@ -146,6 +147,10 @@ pub struct Action {
 pub struct HitEvent {
     action: ActionTiming,
     combat_state: CombatState,
+}
+
+pub struct DeathEvent {
+    pub entity: Entity,
 }
 
 #[derive(Reflect, PartialEq, Eq)]

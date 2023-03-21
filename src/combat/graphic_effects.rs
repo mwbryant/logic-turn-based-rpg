@@ -5,7 +5,19 @@ pub struct GraphicEffectsPlugin;
 impl Plugin for GraphicEffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_hit_particles)
+            .add_system(add_death_animation)
             .add_system(spawn_player_win_particles.in_schedule(OnEnter(CombatState::PlayerWins)));
+    }
+}
+
+fn add_death_animation(mut commands: Commands, mut death_event: EventReader<DeathEvent>) {
+    for death in death_event.iter() {
+        commands.entity(death.entity).insert((
+            DeathAnimation,
+            Lifetime {
+                timer: Timer::from_seconds(1.0, TimerMode::Once),
+            },
+        ));
     }
 }
 
@@ -51,16 +63,14 @@ fn spawn_hit_particles(
             ..default()
         };
 
-        info!("{:?}", translation);
-
         create_new_rect_emitter(
             &mut commands,
             particle_desc,
             translation.truncate(),
-            Vec2::new(0.5, 0.5),
+            Vec2::new(0.8, 0.8),
             0.2,
             1,
-            0.035,
+            0.03,
         );
     }
 }

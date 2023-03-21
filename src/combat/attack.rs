@@ -27,19 +27,19 @@ pub enum DeathState {
     AllEnemiesDead,
 }
 
-pub fn check_death(
-    player: Query<&CombatStats, With<Player>>,
-    enemy: Query<&CombatStats, (With<Enemy>, Without<Player>)>,
-) -> DeathState {
+fn check_death(
+    player: Query<(Entity, &CombatStats), With<Player>>,
+    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+) -> (DeathState, Option<Entity>) {
     let player = player.get_single().expect("No player");
     let enemy = enemy.get_single().expect("No enemy");
-    if enemy.health <= 0 {
-        return DeathState::AllEnemiesDead;
+    if enemy.1.health <= 0 {
+        return (DeathState::AllEnemiesDead, Some(enemy.0));
     }
-    if player.health <= 0 {
-        return DeathState::PlayerDied;
+    if player.1.health <= 0 {
+        return (DeathState::PlayerDied, Some(player.0));
     }
-    DeathState::NoChange
+    (DeathState::NoChange, None)
 }
 
 fn attack_flow(
@@ -48,8 +48,9 @@ fn attack_flow(
     mut hit_event: EventWriter<HitEvent>,
     state: Res<State<CombatState>>,
     mut next_state: ResMut<NextState<CombatState>>,
-    player: Query<&CombatStats, With<Player>>,
-    enemy: Query<&CombatStats, (With<Enemy>, Without<Player>)>,
+    player: Query<(Entity, &CombatStats), With<Player>>,
+    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+    mut death_event: EventWriter<DeathEvent>,
 ) {
     for mut attack in &mut attack {
         attack.timer.tick(time.delta());
@@ -68,7 +69,11 @@ fn attack_flow(
             if attack.current_stage >= attack.stages.len() {
                 attack.current_stage = attack.stages.len() - 1;
 
-                let death_state = check_death(player, enemy);
+                let (death_state, entity) = check_death(player, enemy);
+
+                if let Some(entity) = entity {
+                    death_event.send(DeathEvent { entity });
+                }
 
                 match death_state {
                     DeathState::NoChange => match state.0 {

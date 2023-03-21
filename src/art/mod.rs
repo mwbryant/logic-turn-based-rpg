@@ -1,3 +1,4 @@
+mod animation;
 mod particles;
 pub mod sprite_sheets;
 pub use sprite_sheets::*;
@@ -6,6 +7,7 @@ use crate::prelude::*;
 
 pub use particles::create_new_rect_emitter;
 
+use self::animation::AnimationPlugin;
 use self::particles::ParticlePlugin;
 
 pub struct ArtPlugin;
@@ -14,10 +16,14 @@ impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(SpriteSheetPlugin)
             .add_plugin(ParticlePlugin)
+            .add_plugin(AnimationPlugin)
             .register_type::<Icon>()
             .register_type::<Character>();
     }
 }
+
+#[derive(Component)]
+pub struct DeathAnimation;
 
 #[derive(Component)]
 pub struct RectParticleEmitter {
