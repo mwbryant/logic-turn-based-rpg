@@ -65,7 +65,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         Name::new("Enemy"),
     ));
 
-    /*
     commands.spawn((
         CharacterBundle::new(Vec2::new(4.0, 0.0), Character::GreenBase),
         Enemy {
@@ -79,7 +78,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("Enemy"),
     ));
-    */
 
     /*
     commands.spawn((

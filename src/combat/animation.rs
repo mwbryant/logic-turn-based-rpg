@@ -1,6 +1,8 @@
 use crate::prelude::*;
 use bevy_easings::Lerp;
 
+use super::turn_based::spawn_enemy_attack;
+
 pub struct CombatAnimationPlugin;
 
 impl Plugin for CombatAnimationPlugin {
@@ -9,7 +11,12 @@ impl Plugin for CombatAnimationPlugin {
             .add_system(
                 despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::PlayerAttacking)),
             )
-            .add_system(spawn_enemy_weapon.in_schedule(OnEnter(CombatState::EnemyAttacking)))
+            .add_systems(
+                (apply_system_buffers, spawn_enemy_weapon)
+                    .chain()
+                    .after(spawn_enemy_attack)
+                    .in_schedule(OnEnter(CombatState::EnemyAttacking)),
+            )
             .add_system(
                 despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::EnemyAttacking)),
             )
@@ -158,9 +165,15 @@ fn animate_ranged<T: Component>(
 }
 
 //TODO make generic
-fn spawn_enemy_weapon(mut commands: Commands, enemy: Query<Entity, With<Enemy>>) {
+fn spawn_enemy_weapon(
+    mut commands: Commands,
+    attack: Query<&Attack>,
+    enemy: Query<Entity, With<Enemy>>,
+) {
     let weapon = Weapon::BasicSpear;
-    let enemy = enemy.get_single().expect("No Enemy");
+    let attack = attack.get_single().expect("No attack or multiple");
+    let enemy = enemy.get(attack.attacker).expect("Attacker is not enemy");
+
     let new_ent = commands
         .spawn((
             WeaponBundle::new(

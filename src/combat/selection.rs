@@ -29,7 +29,7 @@ fn lock_in_attack(
     enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
     weapon_icons: Query<(&WeaponIcon, &Weapon)>,
 ) {
-    let enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+    let enemy = enemy.iter().next().expect("No enemy left :(");
 
     let selection = selection.single();
     let slot = selection.selection.rem_euclid(selection.slots);

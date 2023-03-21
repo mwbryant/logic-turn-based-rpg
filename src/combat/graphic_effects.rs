@@ -26,20 +26,10 @@ fn spawn_hit_particles(
     assets: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut hit_event: EventReader<HitEvent>,
-    player: Query<&Transform, With<Player>>,
-    enemy: Query<&Transform, (With<Enemy>, Without<Player>)>,
+    target: Query<&Transform>,
 ) {
     for hit in hit_event.iter() {
-        let player = player.get_single().expect("No player");
-        let enemy = enemy.get_single().expect("No enemy");
-
-        let translation = match hit.combat_state {
-            CombatState::PlayerSelecting | CombatState::PlayerWins => {
-                unreachable!("Can't hit in this state")
-            }
-            CombatState::PlayerAttacking => enemy.translation,
-            CombatState::EnemyAttacking => player.translation,
-        };
+        let translation = target.get(hit.target).expect("No target").translation;
 
         let texture_handle = assets.load("my_art/particles.png");
         let texture_atlas =

@@ -19,6 +19,7 @@ pub enum CombatState {
     PlayerSelecting,
     PlayerAttacking,
     EnemyAttacking,
+    EnemyDying,
     PlayerWins,
 }
 

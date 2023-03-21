@@ -27,15 +27,28 @@ pub enum DeathState {
     AllEnemiesDead,
 }
 
-fn check_death(
-    player: Query<(Entity, &CombatStats), With<Player>>,
-    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+//FIXME really bad and fragile
+pub fn check_death(
+    player: &Query<(Entity, &CombatStats), With<Player>>,
+    enemy: &Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
 ) -> (DeathState, Option<Entity>) {
     let player = player.get_single().expect("No player");
-    let enemy = enemy.get_single().expect("No enemy");
-    if enemy.1.health <= 0 {
-        return (DeathState::AllEnemiesDead, Some(enemy.0));
+    let enemy_count = enemy.iter().count();
+
+    if enemy_count == 0 {
+        return (DeathState::AllEnemiesDead, None);
     }
+
+    for enemy in enemy {
+        if enemy.1.health <= 0 {
+            if enemy_count == 1 {
+                return (DeathState::AllEnemiesDead, Some(enemy.0));
+            } else {
+                return (DeathState::EnemyDied, Some(enemy.0));
+            }
+        }
+    }
+
     if player.1.health <= 0 {
         return (DeathState::PlayerDied, Some(player.0));
     }
@@ -50,7 +63,6 @@ fn attack_flow(
     mut next_state: ResMut<NextState<CombatState>>,
     player: Query<(Entity, &CombatStats), With<Player>>,
     enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
-    mut death_event: EventWriter<DeathEvent>,
 ) {
     for mut attack in &mut attack {
         attack.timer.tick(time.delta());
@@ -72,11 +84,8 @@ fn attack_flow(
             if attack.current_stage >= attack.stages.len() {
                 attack.current_stage = attack.stages.len() - 1;
 
-                let (death_state, entity) = check_death(player, enemy);
-
-                if let Some(entity) = entity {
-                    death_event.send(DeathEvent { entity });
-                }
+                //FIXME not the place to check this
+                let (death_state, _entity) = check_death(&player, &enemy);
 
                 match death_state {
                     DeathState::NoChange => match state.0 {
@@ -85,6 +94,7 @@ fn attack_flow(
                         _ => unreachable!("Can't finish attack in this state"),
                     },
                     DeathState::AllEnemiesDead => next_state.set(CombatState::PlayerWins),
+                    DeathState::EnemyDied => next_state.set(CombatState::EnemyDying),
                     _ => unreachable!("Bad death state"),
                 }
                 return;

@@ -1,31 +1,45 @@
 use crate::prelude::*;
 
+use super::attack::check_death;
+
 pub struct TurnBasedPlugin;
 
 impl Plugin for TurnBasedPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
             .add_system(spawn_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
+            .add_system(wait_for_death.in_set(OnUpdate(CombatState::EnemyDying)))
             .add_systems(
-                (player_action_timing, deal_damage).in_set(OnUpdate(CombatState::PlayerAttacking)),
+                (player_action_timing, deal_damage, send_deaths)
+                    .in_set(OnUpdate(CombatState::PlayerAttacking)),
             )
             //I wish I could and an in set
             .add_systems(
-                (player_action_timing, deal_damage).in_set(OnUpdate(CombatState::EnemyAttacking)),
+                (player_action_timing, deal_damage, send_deaths)
+                    .in_set(OnUpdate(CombatState::EnemyAttacking)),
             );
     }
 }
 
-fn spawn_enemy_attack(
+fn wait_for_death(mut next_state: ResMut<NextState<CombatState>>, dying: Query<&DeathAnimation>) {
+    if dying.iter().count() == 0 {
+        next_state.set(CombatState::EnemyAttacking);
+    }
+}
+
+pub fn spawn_enemy_attack(
     mut commands: Commands,
     player: Query<Entity, With<Player>>,
-    enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
+    //Without dying enemies
+    enemy: Query<(Entity, &Transform), (With<Enemy>, Without<Player>, Without<Lifetime>)>,
 ) {
     //TODO attack based on enemy
-    let enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+    let (enemy, transform) = enemy.iter().next().expect("0 enemies");
     let player = player.get_single().expect("One player only!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    commands.spawn(Weapon::BasicSpear.get_attack_bundle(false, enemy, player));
+    let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player);
+    attack.animation.starting_x = transform.translation.x;
+    commands.spawn(attack);
 }
 
 fn spawn_player_attack(
@@ -70,7 +84,7 @@ fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyC
 
 fn deal_damage(mut hit_event: EventReader<HitEvent>, mut combatants: Query<&mut CombatStats>) {
     for hit in hit_event.iter() {
-        let [mut target, mut attacker] = combatants
+        let [mut target, attacker] = combatants
             .get_many_mut([hit.target, hit.attacker])
             .expect("Either target or attacker doesn't have stats");
 
@@ -86,5 +100,20 @@ fn deal_damage(mut hit_event: EventReader<HitEvent>, mut combatants: Query<&mut 
 
         let damage = (((attacker.attack - target.defense) as f32 * modifer) as i32).clamp(0, 99);
         target.health -= damage;
+    }
+}
+
+fn send_deaths(
+    mut hit_event: EventReader<HitEvent>,
+    player: Query<(Entity, &CombatStats), With<Player>>,
+    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+    mut death_event: EventWriter<DeathEvent>,
+) {
+    if hit_event.iter().count() > 0 {
+        let (_death_state, entity) = check_death(&player, &enemy);
+
+        if let Some(entity) = entity {
+            death_event.send(DeathEvent { entity });
+        }
     }
 }
