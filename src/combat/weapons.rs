@@ -1,7 +1,5 @@
 use std::f32::consts::PI;
 
-use bevy::sprite::Anchor;
-
 use crate::prelude::*;
 
 pub struct WeaponPlugin;

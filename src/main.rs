@@ -1,6 +1,4 @@
-use bevy::{
-    input::common_conditions::input_toggle_active, log::LogPlugin, render::camera::ScalingMode,
-};
+use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
@@ -26,6 +24,7 @@ fn main() {
     )
     .add_plugin(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)))
     .add_startup_system(setup)
+    .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
     .add_plugin(CombatPlugin)
     .add_plugin(ArtPlugin);
 
