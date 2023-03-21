@@ -94,6 +94,7 @@ fn attack_flow(
                         _ => unreachable!("Can't finish attack in this state"),
                     },
                     DeathState::AllEnemiesDead => next_state.set(CombatState::PlayerWins),
+
                     DeathState::EnemyDied => next_state.set(CombatState::EnemyDying),
                     _ => unreachable!("Bad death state"),
                 }

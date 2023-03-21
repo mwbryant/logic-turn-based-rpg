@@ -11,11 +11,13 @@ impl Plugin for TurnBasedPlugin {
             .add_system(wait_for_death.in_set(OnUpdate(CombatState::EnemyDying)))
             .add_systems(
                 (player_action_timing, deal_damage, send_deaths)
+                    .chain()
                     .in_set(OnUpdate(CombatState::PlayerAttacking)),
             )
             //I wish I could and an in set
             .add_systems(
                 (player_action_timing, deal_damage, send_deaths)
+                    .chain()
                     .in_set(OnUpdate(CombatState::EnemyAttacking)),
             );
     }
@@ -113,6 +115,8 @@ fn send_deaths(
         let (_death_state, entity) = check_death(&player, &enemy);
 
         if let Some(entity) = entity {
+            info!("Sending death");
+
             death_event.send(DeathEvent { entity });
         }
     }

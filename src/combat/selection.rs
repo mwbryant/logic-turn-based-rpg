@@ -29,6 +29,7 @@ fn lock_in_attack(
     enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
     weapon_icons: Query<(&WeaponIcon, &Weapon)>,
 ) {
+    warn!("Fixme this isn't the way to pick an enemy");
     let enemy = enemy.iter().next().expect("No enemy left :(");
 
     let selection = selection.single();
