@@ -67,6 +67,22 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 
     /*
     commands.spawn((
+        CharacterBundle::new(Vec2::new(4.0, 0.0), Character::GreenBase),
+        Enemy {
+            base_experience_reward: 5,
+        },
+        CombatStats {
+            health: 2,
+            max_health: 2,
+            attack: 1,
+            defense: 0,
+        },
+        Name::new("Enemy"),
+    ));
+    */
+
+    /*
+    commands.spawn((
         SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(0.1, 0.1)),

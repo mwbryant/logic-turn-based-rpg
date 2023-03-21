@@ -26,14 +26,17 @@ impl Plugin for SelectionPlugin {
 fn lock_in_attack(
     mut commands: Commands,
     selection: Query<&CurrentSelectedMenuItem, With<SelectionIcon>>,
+    enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
     weapon_icons: Query<(&WeaponIcon, &Weapon)>,
 ) {
+    let enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+
     let selection = selection.single();
     let slot = selection.selection.rem_euclid(selection.slots);
 
     for (icon, weapon) in &weapon_icons {
         if icon.0 == slot {
-            commands.spawn((weapon.clone(), PlayerAttack));
+            commands.spawn((weapon.clone(), PlayerAttack { target: enemy }));
             return;
         }
     }

@@ -113,7 +113,9 @@ pub struct SelectionIcon;
 pub struct VictoryParticle;
 
 #[derive(Component, Reflect)]
-pub struct PlayerAttack;
+pub struct PlayerAttack {
+    pub target: Entity,
+}
 
 #[derive(Component, Reflect)]
 pub struct EnemyAttack;
@@ -131,6 +133,8 @@ pub struct Projectile;
 
 #[derive(Component)]
 pub struct Attack {
+    pub attacker: Entity,
+    pub target: Entity,
     pub attack_type: WeaponAttackType,
     pub current_stage: usize,
     pub stages: Vec<(AttackStage, f32)>,
@@ -145,6 +149,9 @@ pub struct Action {
 }
 
 pub struct HitEvent {
+    target: Entity,
+    attacker: Entity,
+    player_attacking: bool,
     action: ActionTiming,
     combat_state: CombatState,
 }

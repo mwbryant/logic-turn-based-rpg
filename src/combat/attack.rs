@@ -58,6 +58,9 @@ fn attack_flow(
             let finished_stage = &attack.stages[attack.current_stage].0;
             if matches!(finished_stage, AttackStage::Action) {
                 hit_event.send(HitEvent {
+                    attacker: attack.attacker,
+                    target: attack.target,
+                    player_attacking: matches!(state.0, CombatState::PlayerAttacking),
                     action: attack.action.action_input,
                     combat_state: state.0.clone(),
                 });

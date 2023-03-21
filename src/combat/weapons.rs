@@ -16,7 +16,12 @@ impl Weapon {
         }
     }
 
-    pub fn get_attack_bundle(&self, player: bool) -> AttackBundle {
+    pub fn get_attack_bundle(
+        &self,
+        player: bool,
+        attacker: Entity,
+        target: Entity,
+    ) -> AttackBundle {
         let animation = if player {
             match self {
                 Weapon::BasicStaffOrange => AttackAnimation {
@@ -40,6 +45,8 @@ impl Weapon {
 
         let attack = match self {
             Weapon::BasicStaffOrange => Attack {
+                attacker,
+                target,
                 current_stage: 0,
                 stages: vec![
                     (AttackStage::Charge, 0.2),
@@ -55,6 +62,8 @@ impl Weapon {
                 timer: Timer::from_seconds(0.2, TimerMode::Once),
             },
             Weapon::BasicSpear => Attack {
+                attacker,
+                target,
                 current_stage: 0,
                 stages: vec![
                     (AttackStage::WalkUp, 0.7),

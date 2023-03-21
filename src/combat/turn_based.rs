@@ -16,23 +16,30 @@ impl Plugin for TurnBasedPlugin {
     }
 }
 
-fn spawn_enemy_attack(mut commands: Commands, enemy: Query<&Enemy>) {
+fn spawn_enemy_attack(
+    mut commands: Commands,
+    player: Query<Entity, With<Player>>,
+    enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
+) {
     //TODO attack based on enemy
-    let _enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+    let enemy = enemy.get_single().expect("More than 1 or 0 enemies...");
+    let player = player.get_single().expect("One player only!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    commands.spawn(Weapon::BasicSpear.get_attack_bundle(false));
+    commands.spawn(Weapon::BasicSpear.get_attack_bundle(false, enemy, player));
 }
 
 fn spawn_player_attack(
     mut commands: Commands,
-    locked_attack: Query<(Entity, &Weapon), With<PlayerAttack>>,
+    player: Query<Entity, With<Player>>,
+    locked_attack: Query<(Entity, &Weapon, &PlayerAttack)>,
 ) {
-    let (entity, weapon) = locked_attack.get_single().expect("No attack!");
+    let (entity, weapon, attack) = locked_attack.get_single().expect("No attack!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
+    let player = player.get_single().expect("One player only!");
 
     commands
         .entity(entity)
-        .insert(weapon.get_attack_bundle(true));
+        .insert(weapon.get_attack_bundle(true, player, attack.target));
 }
 
 fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyCode>>) {
@@ -61,39 +68,23 @@ fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyC
     }
 }
 
-fn deal_damage(
-    mut hit_event: EventReader<HitEvent>,
-    mut player: Query<&mut CombatStats, With<Player>>,
-    mut enemy: Query<&mut CombatStats, (With<Enemy>, Without<Player>)>,
-) {
+fn deal_damage(mut hit_event: EventReader<HitEvent>, mut combatants: Query<&mut CombatStats>) {
     for hit in hit_event.iter() {
-        let mut player = player.get_single_mut().expect("No player");
-        let mut enemy = enemy.get_single_mut().expect("No enemy");
+        let [mut target, mut attacker] = combatants
+            .get_many_mut([hit.target, hit.attacker])
+            .expect("Either target or attacker doesn't have stats");
 
-        match hit.combat_state {
-            CombatState::PlayerSelecting | CombatState::PlayerWins => {
-                unreachable!("Can't hit in this state")
+        let modifer = if matches!(hit.action, ActionTiming::Critical) {
+            if hit.player_attacking {
+                2.0
+            } else {
+                0.5
             }
-            CombatState::PlayerAttacking => {
-                let damage = (if matches!(hit.action, ActionTiming::Critical) {
-                    (player.attack - enemy.defense) * 2
-                } else {
-                    player.attack - enemy.defense
-                })
-                .clamp(0, 99);
-                info!("player hit, {:?} {:?}", hit.action, damage);
-                enemy.health -= damage;
-            }
-            CombatState::EnemyAttacking => {
-                let damage = (if matches!(hit.action, ActionTiming::Critical) {
-                    (enemy.attack - player.defense) / 2
-                } else {
-                    enemy.attack - player.defense
-                })
-                .clamp(0, 99);
-                info!("enemy hit, {:?} {:?}", hit.action, damage);
-                player.health -= damage;
-            }
-        }
+        } else {
+            1.0
+        };
+
+        let damage = (((attacker.attack - target.defense) as f32 * modifer) as i32).clamp(0, 99);
+        target.health -= damage;
     }
 }
