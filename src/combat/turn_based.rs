@@ -33,10 +33,13 @@ pub fn spawn_enemy_attack(
     mut commands: Commands,
     player: Query<Entity, With<Player>>,
     //Without dying enemies
-    enemy: Query<(Entity, &Transform), (With<Enemy>, Without<Player>, Without<Lifetime>)>,
+    enemy: Query<(Entity, &Transform, &Enemy), (Without<Player>, Without<Lifetime>)>,
 ) {
-    //TODO attack based on enemy
-    let (enemy, transform) = enemy.iter().next().expect("0 enemies");
+    let (enemy, transform, _) = enemy
+        .iter()
+        .min_by_key(|(_, _, enemy)| enemy.slot)
+        .expect("No enemy to attack");
+
     let player = player.get_single().expect("One player only!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
     let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player, 0);

@@ -6,7 +6,7 @@ impl Plugin for GraphicEffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_hit_particles)
             .add_system(add_death_animation)
-            .add_system(spawn_projectile_particles)
+            .add_system(projectile_particles)
             .add_system(spawn_player_win_particles.in_schedule(OnEnter(CombatState::PlayerWins)));
     }
 }
@@ -22,7 +22,7 @@ fn add_death_animation(mut commands: Commands, mut death_event: EventReader<Deat
     }
 }
 
-fn spawn_projectile_particles(
+fn projectile_particles(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,

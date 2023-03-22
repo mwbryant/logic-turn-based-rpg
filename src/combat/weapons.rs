@@ -27,12 +27,12 @@ impl Weapon {
             match self {
                 Weapon::BasicStaffOrange => AttackAnimation {
                     starting_x: -2.5,
-                    ending_x: 2.7 + slot as f32 * 1.2,
+                    ending_x: 0.3 + slot as f32 * 1.2,
                     max_weapon_rotation: -1.0,
                 },
                 Weapon::BasicSpear => AttackAnimation {
                     starting_x: -3.0,
-                    ending_x: 1.9 + slot as f32 * 1.2,
+                    ending_x: -0.5 + slot as f32 * 1.2,
                     max_weapon_rotation: -1.0,
                 },
             }

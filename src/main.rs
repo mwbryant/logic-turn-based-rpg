@@ -52,9 +52,39 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     ));
 
     commands.spawn((
-        CharacterBundle::new(Vec2::new(3.0, 0.0), Character::GreenBase),
+        CharacterBundle::new(Vec2::new(0.6, 0.0), Character::GreenBase),
         Enemy {
             slot: 0,
+            base_experience_reward: 5,
+        },
+        CombatStats {
+            health: 2,
+            max_health: 2,
+            attack: 1,
+            defense: 0,
+        },
+        Name::new("Enemy"),
+    ));
+
+    commands.spawn((
+        CharacterBundle::new(Vec2::new(1.8, 0.0), Character::GreenBase),
+        Enemy {
+            slot: 1,
+            base_experience_reward: 5,
+        },
+        CombatStats {
+            health: 2,
+            max_health: 2,
+            attack: 1,
+            defense: 0,
+        },
+        Name::new("Enemy"),
+    ));
+
+    commands.spawn((
+        CharacterBundle::new(Vec2::new(3.0, 0.0), Character::GreenBase),
+        Enemy {
+            slot: 2,
             base_experience_reward: 5,
         },
         CombatStats {
@@ -70,7 +100,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         CharacterBundle::new(Vec2::new(4.2, 0.0), Character::GreenBase),
         Enemy {
             //TODO use slots to look up into a resource for x,y and ui positioning
-            slot: 1,
+            slot: 3,
             base_experience_reward: 5,
         },
         CombatStats {
@@ -82,6 +112,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         Name::new("Enemy"),
     ));
 
+    /*
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -93,6 +124,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("WhiteDot"),
     ));
+    */
 
     commands.spawn((
         SpriteBundle {

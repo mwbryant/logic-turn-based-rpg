@@ -38,7 +38,8 @@ fn update_enemy_health_ui(
 
     for (mut text, attached) in &mut text {
         if let Ok(enemy) = enemies.get(attached.0) {
-            text.sections[0].value = format!("{:?}/{:?}", enemy.health, enemy.max_health);
+            text.sections[0].value =
+                format!("{:?}/{:?}", enemy.health.clamp(0, 9999), enemy.max_health);
         }
     }
 }
@@ -55,9 +56,10 @@ fn spawn_enemy_health_ui(
 
     for (entity, enemy) in &enemies {
         let x = match enemy.slot {
-            //TODO come from a resource
-            0 => 2.5,
-            1 => 3.7,
+            0 => 0.1,
+            1 => 1.3,
+            2 => 2.5,
+            3 => 3.7,
             _ => unreachable!("Bad slot"),
         };
 
