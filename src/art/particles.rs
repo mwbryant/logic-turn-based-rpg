@@ -6,7 +6,6 @@ pub struct ParticlePlugin;
 
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
-        //TODO particle lifetimes
         app.add_system(particle_emitter_spawn)
             .add_system(particles_lifetime)
             .add_system(particles_rotate)
@@ -21,7 +20,6 @@ pub fn create_new_rect_emitter(
     particle_desc: ParticleDesc,
     position: Vec2,
     size: Vec2,
-    //TODO optional maybe
     lifetime: f32,
     varients: usize,
     rate: f32,
@@ -35,6 +33,7 @@ pub fn create_new_rect_emitter(
                     TimerMode::Once,
                 ),
             },
+            ParticleParent,
             Name::new("ParticleParent"),
         ))
         .id();
@@ -52,17 +51,20 @@ pub fn create_new_rect_emitter(
                 varients,
                 desc: particle_desc,
             },
+            Name::new("ParticleEmitter"),
         ))
         .id()
 }
 
 fn particle_emitter_spawn(
     mut commands: Commands,
-    mut emitters: Query<&mut RectParticleEmitter>,
+    //Global transforms allow for moving emitters and static parents
+    mut emitters: Query<(&mut RectParticleEmitter, &GlobalTransform)>,
+    parents: Query<&GlobalTransform, With<ParticleParent>>,
     time: Res<Time>,
 ) {
     let mut rng = rand::thread_rng();
-    for mut emitter in &mut emitters {
+    for (mut emitter, emitter_transform) in &mut emitters {
         emitter.rate.tick(time.delta());
 
         for _i in 0..emitter.rate.times_finished_this_tick() {
@@ -70,11 +72,19 @@ fn particle_emitter_spawn(
                 rng.gen_range((-emitter.size.x / 2.0)..(emitter.size.x / 2.0)),
                 rng.gen_range((-emitter.size.y / 2.0)..(emitter.size.y / 2.0)),
             );
+            let emitter_to_parent_difference = emitter_transform.translation().truncate()
+                - parents
+                    .get(emitter.particle_parent)
+                    .expect("No parent")
+                    .translation()
+                    .truncate();
+
             //Faster to spawn batch or not noticible?
             //TODO move all generic emitter work to a standalone function
             let mut sprite = emitter.desc.sprite.clone();
             sprite.sprite.index = rng.gen_range(0..emitter.varients);
-            sprite.transform.translation = Vec3::new(x_offset, y_offset, 0.0);
+            sprite.transform.translation =
+                Vec3::new(x_offset, y_offset, 0.0) + emitter_to_parent_difference.extend(0.0);
 
             let mut particle = commands.spawn((sprite, emitter.desc.particle.clone()));
 
@@ -122,11 +132,9 @@ fn particles_fall(
 
 fn particles_radial(
     mut particles: Query<(&mut Transform, &RadialParticle), With<Particle>>,
-    //emitters: Query<&Transform, (With<RectParticleEmitter>, Without<Particle>)>,
     time: Res<Time>,
 ) {
     for (mut transform, radial) in &mut particles {
-        //let parent = emitters.get(parent.get()).expect("Parent isn't emitter?");
         let direction = transform.translation.truncate().normalize();
         transform.translation += (radial.speed * time.delta_seconds()) * direction.extend(0.0);
     }

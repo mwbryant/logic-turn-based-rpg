@@ -18,11 +18,16 @@ impl Plugin for ArtPlugin {
             .add_plugin(ParticlePlugin)
             .add_plugin(AnimationPlugin)
             .register_type::<Icon>()
+            .register_type::<Particle>()
+            .register_type::<FallingParticle>()
+            .register_type::<FadingParticle>()
+            .register_type::<RadialParticle>()
+            .register_type::<RotatingParticle>()
             .register_type::<Character>();
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct DeathAnimation;
 
 #[derive(Component)]
@@ -45,30 +50,30 @@ pub struct ParticleDesc {
     pub fading: Option<FadingParticle>,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct ParticleParent;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct Particle {
     pub lifetime: Timer,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct FallingParticle {
     pub speed: f32,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct RadialParticle {
     pub speed: f32,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct RotatingParticle {
     pub speed: f32,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct FadingParticle {}
 
 #[derive(Bundle)]
@@ -82,6 +87,7 @@ pub struct WeaponBundle {
 pub struct CharacterBundle {
     #[bundle]
     sprite_sheet: SpriteSheetBundle,
+    hand_offset: HandOffset,
     character: Character,
 }
 
@@ -102,6 +108,12 @@ pub struct PlanetBundle {
 //Used for the weapon in the players hand during an attack animation
 #[derive(Component)]
 pub struct WeaponGraphic;
+
+#[derive(Component)]
+pub struct HandOffset {
+    pub left: Vec2,
+    pub right: Vec2,
+}
 
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 pub const ICON_SHEET_WIDTH: usize = 34;

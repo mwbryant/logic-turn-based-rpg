@@ -21,22 +21,22 @@ impl Plugin for CombatAnimationPlugin {
                 despawn_with::<WeaponGraphic>.in_schedule(OnExit(CombatState::EnemyAttacking)),
             )
             .add_system(
-                animate_melee::<Player>
+                animate_melee
                     .in_set(OnUpdate(CombatState::PlayerAttacking))
                     .in_set(CombatSet::Animation),
             )
             .add_system(
-                animate_melee::<Enemy>
+                animate_melee
                     .in_set(OnUpdate(CombatState::EnemyAttacking))
                     .in_set(CombatSet::Animation),
             )
             .add_system(
-                animate_ranged::<Player>
+                animate_ranged
                     .in_set(OnUpdate(CombatState::PlayerAttacking))
                     .in_set(CombatSet::Animation),
             )
             .add_system(
-                animate_ranged::<Enemy>
+                animate_ranged
                     .in_set(OnUpdate(CombatState::EnemyAttacking))
                     .in_set(CombatSet::Animation),
             );
@@ -44,23 +44,27 @@ impl Plugin for CombatAnimationPlugin {
 }
 
 //TODO player location determined from config somehow
-fn animate_melee<T: Component>(
-    mut attacker: Query<(&mut Transform, &Children), With<T>>,
+fn animate_melee(
+    mut attacker: Query<(&mut Transform, &Children), Without<Weapon>>,
     attack: Query<(&Attack, &AttackAnimation)>,
-    mut weapon: Query<&mut Transform, (With<Weapon>, Without<T>)>,
+    mut weapon: Query<&mut Transform, With<Weapon>>,
 ) {
-    let (mut transform, children) = attacker.get_single_mut().expect("No or multiple attackers");
-
-    let child = children
-        .iter()
-        .find(|&&child| weapon.contains(child))
-        .expect("Attacker doesn't have a weapon sprite");
-    let mut child_transform = weapon.get_mut(*child).unwrap();
-
     if let Ok((attack, animation)) = attack.get_single() {
         if !matches!(attack.attack_type, WeaponAttackType::Melee) {
             return;
         }
+
+        let (mut transform, children) = attacker
+            .get_mut(attack.attacker)
+            .expect("Attacker has no weapon");
+
+        let child = children
+            .iter()
+            .find(|&&child| weapon.contains(child))
+            .expect("Attacker doesn't have a weapon sprite");
+
+        let mut child_transform = weapon.get_mut(*child).unwrap();
+
         match attack.stages[attack.current_stage].0 {
             AttackStage::WalkUp => {
                 transform.translation.x =
@@ -93,34 +97,33 @@ fn animate_melee<T: Component>(
     }
 }
 
-fn animate_ranged<T: Component>(
+fn animate_ranged(
     //This system shouldn't be responisble for spawning the fireball..
     mut commands: Commands,
-    mut attacker: Query<(&mut Transform, &Children), With<T>>,
+    mut attacker: Query<(&mut Transform, &Children), (Without<Projectile>, Without<Weapon>)>,
     attack: Query<(&Attack, &AttackAnimation)>,
     mut projectile: Query<
         (Entity, &mut Transform),
-        (
-            With<WeaponGraphic>,
-            With<Projectile>,
-            Without<T>,
-            Without<Weapon>,
-        ),
+        (With<WeaponGraphic>, With<Projectile>, Without<Weapon>),
     >,
-    mut weapon: Query<&mut Transform, (With<Weapon>, Without<T>)>,
+    mut weapon: Query<&mut Transform, With<Weapon>>,
 ) {
-    let (mut _transform, children) = attacker.get_single_mut().expect("No or multiple attackers");
-
-    let child = children
-        .iter()
-        .find(|&&child| weapon.contains(child))
-        .expect("Attacker doesn't have a weapon sprite");
-    let mut child_transform = weapon.get_mut(*child).unwrap();
-
     if let Ok((attack, animation)) = attack.get_single() {
         if !matches!(attack.attack_type, WeaponAttackType::Range) {
             return;
         }
+
+        let (_transform, children) = attacker
+            .get_mut(attack.attacker)
+            .expect("Attacker has no weapon");
+
+        let child = children
+            .iter()
+            .find(|&&child| weapon.contains(child))
+            .expect("Attacker doesn't have a weapon sprite");
+
+        let mut child_transform = weapon.get_mut(*child).unwrap();
+
         match attack.stages[attack.current_stage].0 {
             AttackStage::Charge => {
                 //Probably a more elegant solution to this
@@ -142,7 +145,7 @@ fn animate_ranged<T: Component>(
                 if projectile.iter().count() == 0 {
                     //spawn projectile
                     commands.spawn((
-                        PlanetBundle::new(Vec2::ZERO, Planet::Fireball),
+                        PlanetBundle::new(Vec2::new(0.0, 0.4), Planet::Fireball),
                         Projectile,
                         WeaponGraphic,
                     ));
@@ -168,17 +171,17 @@ fn animate_ranged<T: Component>(
 fn spawn_enemy_weapon(
     mut commands: Commands,
     attack: Query<&Attack>,
-    enemy: Query<Entity, With<Enemy>>,
+    enemy: Query<(Entity, &HandOffset), With<Enemy>>,
 ) {
     let weapon = Weapon::BasicSpear;
     let attack = attack.get_single().expect("No attack or multiple");
-    let enemy = enemy.get(attack.attacker).expect("Attacker is not enemy");
+    let (enemy, hand) = enemy.get(attack.attacker).expect("Attacker is not enemy");
 
     let new_ent = commands
         .spawn((
             WeaponBundle::new(
                 //FIXME magic config
-                Vec2::new(-0.40, -0.37),
+                hand.left,
                 weapon,
                 Vec2::splat(1.0),
             ),
@@ -192,18 +195,13 @@ fn spawn_enemy_weapon(
 fn spawn_player_weapon(
     mut commands: Commands,
     locked_attack: Query<&Weapon, With<PlayerAttack>>,
-    player: Query<Entity, With<Player>>,
+    player: Query<(Entity, &HandOffset), With<Player>>,
 ) {
     let weapon = locked_attack.get_single().expect("No attack selected :(");
-    let player = player.get_single().expect("No Player");
+    let (player, hand) = player.get_single().expect("No Player");
     let new_ent = commands
         .spawn((
-            WeaponBundle::new(
-                //FIXME magic config
-                Vec2::new(0.35, -0.37),
-                weapon.clone(),
-                Vec2::splat(1.0),
-            ),
+            WeaponBundle::new(hand.right, weapon.clone(), Vec2::splat(1.0)),
             WeaponGraphic,
             Name::new("Weapon Graphic"),
         ))

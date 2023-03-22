@@ -144,6 +144,10 @@ impl Default for CharacterBundle {
             // Using ..Default::default() gives a proper warning though....
             // https://github.com/bevyengine/bevy/issues/6207
             character: Character::WhiteBase,
+            hand_offset: HandOffset {
+                left: Vec2::new(-0.40, -0.37),
+                right: Vec2::new(0.35, -0.37),
+            },
         }
     }
 }

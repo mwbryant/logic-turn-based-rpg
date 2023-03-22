@@ -134,6 +134,11 @@ pub struct Enemy {
 #[derive(Component, Reflect)]
 pub struct Projectile;
 
+#[derive(Component, Reflect)]
+pub struct ProjectileParticleEmitter {
+    pub projectile: Entity,
+}
+
 #[derive(Component)]
 pub struct Attack {
     pub attacker: Entity,
