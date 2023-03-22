@@ -39,7 +39,7 @@ pub fn spawn_enemy_attack(
     let (enemy, transform) = enemy.iter().next().expect("0 enemies");
     let player = player.get_single().expect("One player only!");
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player);
+    let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player, 0);
     attack.animation.starting_x = transform.translation.x;
     commands.spawn(attack);
 }
@@ -53,9 +53,12 @@ fn spawn_player_attack(
     //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
     let player = player.get_single().expect("One player only!");
 
-    commands
-        .entity(entity)
-        .insert(weapon.get_attack_bundle(true, player, attack.target));
+    commands.entity(entity).insert(weapon.get_attack_bundle(
+        true,
+        player,
+        attack.target,
+        attack.slot,
+    ));
 }
 
 fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyCode>>) {

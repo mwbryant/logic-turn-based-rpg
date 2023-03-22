@@ -54,6 +54,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn((
         CharacterBundle::new(Vec2::new(3.0, 0.0), Character::GreenBase),
         Enemy {
+            slot: 0,
             base_experience_reward: 5,
         },
         CombatStats {
@@ -66,8 +67,9 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     ));
 
     commands.spawn((
-        CharacterBundle::new(Vec2::new(4.0, 0.0), Character::GreenBase),
+        CharacterBundle::new(Vec2::new(4.2, 0.0), Character::GreenBase),
         Enemy {
+            slot: 1,
             base_experience_reward: 5,
         },
         CombatStats {

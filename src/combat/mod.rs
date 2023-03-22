@@ -116,6 +116,7 @@ pub struct VictoryParticle;
 #[derive(Component, Reflect)]
 pub struct PlayerAttack {
     pub target: Entity,
+    pub slot: usize,
 }
 
 #[derive(Component, Reflect)]
@@ -126,6 +127,7 @@ pub struct WeaponIcon(pub i32);
 
 #[derive(Component, Reflect)]
 pub struct Enemy {
+    pub slot: usize,
     pub base_experience_reward: i32,
 }
 

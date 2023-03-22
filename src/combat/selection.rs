@@ -26,18 +26,26 @@ impl Plugin for SelectionPlugin {
 fn lock_in_attack(
     mut commands: Commands,
     selection: Query<&CurrentSelectedMenuItem, With<SelectionIcon>>,
-    enemy: Query<Entity, (With<Enemy>, Without<Player>)>,
+    enemy: Query<(Entity, &Enemy), Without<Player>>,
     weapon_icons: Query<(&WeaponIcon, &Weapon)>,
 ) {
-    warn!("Fixme this isn't the way to pick an enemy");
-    let enemy = enemy.iter().next().expect("No enemy left :(");
+    let (entity, enemy) = enemy
+        .iter()
+        .min_by_key(|(_, enemy)| enemy.slot)
+        .expect("No enemy to target");
 
     let selection = selection.single();
     let slot = selection.selection.rem_euclid(selection.slots);
 
     for (icon, weapon) in &weapon_icons {
         if icon.0 == slot {
-            commands.spawn((weapon.clone(), PlayerAttack { target: enemy }));
+            commands.spawn((
+                weapon.clone(),
+                PlayerAttack {
+                    target: entity,
+                    slot: enemy.slot,
+                },
+            ));
             return;
         }
     }

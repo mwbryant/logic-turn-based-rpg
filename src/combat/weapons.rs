@@ -21,17 +21,18 @@ impl Weapon {
         player: bool,
         attacker: Entity,
         target: Entity,
+        slot: usize,
     ) -> AttackBundle {
         let animation = if player {
             match self {
                 Weapon::BasicStaffOrange => AttackAnimation {
                     starting_x: -2.5,
-                    ending_x: 2.7,
+                    ending_x: 2.7 + slot as f32 * 1.2,
                     max_weapon_rotation: -1.0,
                 },
                 Weapon::BasicSpear => AttackAnimation {
                     starting_x: -3.0,
-                    ending_x: 1.9,
+                    ending_x: 1.9 + slot as f32 * 1.2,
                     max_weapon_rotation: -1.0,
                 },
             }
