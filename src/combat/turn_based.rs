@@ -6,9 +6,7 @@ pub struct TurnBasedPlugin;
 
 impl Plugin for TurnBasedPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
-            .add_system(spawn_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
-            .add_system(wait_for_death.in_set(OnUpdate(CombatState::EnemyDying)))
+        app.add_system(wait_for_death.in_set(OnUpdate(CombatState::EnemyDying)))
             .add_systems(
                 (player_action_timing, deal_damage, send_deaths)
                     .chain()
@@ -27,41 +25,6 @@ fn wait_for_death(mut next_state: ResMut<NextState<CombatState>>, dying: Query<&
     if dying.iter().count() == 0 {
         next_state.set(CombatState::EnemyAttacking);
     }
-}
-
-pub fn spawn_enemy_attack(
-    mut commands: Commands,
-    player: Query<Entity, With<Player>>,
-    //Without dying enemies
-    enemy: Query<(Entity, &Transform, &Enemy), (Without<Player>, Without<Lifetime>)>,
-) {
-    let (enemy, transform, _) = enemy
-        .iter()
-        .min_by_key(|(_, _, enemy)| enemy.slot)
-        .expect("No enemy to attack");
-
-    let player = player.get_single().expect("One player only!");
-    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player, 0);
-    attack.animation.starting_x = transform.translation.x;
-    commands.spawn(attack);
-}
-
-fn spawn_player_attack(
-    mut commands: Commands,
-    player: Query<Entity, With<Player>>,
-    locked_attack: Query<(Entity, &Weapon, &PlayerAttack)>,
-) {
-    let (entity, weapon, attack) = locked_attack.get_single().expect("No attack!");
-    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
-    let player = player.get_single().expect("One player only!");
-
-    commands.entity(entity).insert(weapon.get_attack_bundle(
-        true,
-        player,
-        attack.target,
-        attack.slot,
-    ));
 }
 
 fn player_action_timing(mut attack: Query<&mut Attack>, keyboard: Res<Input<KeyCode>>) {

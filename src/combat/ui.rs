@@ -1,5 +1,3 @@
-use bevy_inspector_egui::egui::Ui;
-
 use crate::prelude::*;
 
 pub struct CombatUIPlugin;

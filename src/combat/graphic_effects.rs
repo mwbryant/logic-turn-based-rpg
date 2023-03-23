@@ -77,7 +77,6 @@ fn projectile_particles(
                 rotating: Some(RotatingParticle { speed: 2.0 }),
                 fading: Some(FadingParticle {}),
                 radial: Some(RadialParticle { speed: 1.0 }),
-                ..default()
             };
 
             let emitter = create_new_rect_emitter(
@@ -151,7 +150,7 @@ fn spawn_player_win_particles(
     let particle_atlas = texture_atlases.add(texture_atlas);
 
     let particle_desc = ParticleDesc {
-        particle: Particle::new(4.0),
+        particle: Particle::new(3.0),
         sprite: SpriteSheetBundle {
             sprite: TextureAtlasSprite {
                 custom_size: Some(Vec2::splat(0.13)),
@@ -160,19 +159,20 @@ fn spawn_player_win_particles(
             texture_atlas: particle_atlas,
             ..default()
         },
-        falling: Some(FallingParticle { speed: 3.0 }),
+        falling: Some(FallingParticle { speed: 4.0 }),
         rotating: Some(RotatingParticle { speed: 10.0 }),
         fading: Some(FadingParticle {}),
         radial: Some(RadialParticle { speed: 1.0 }),
     };
 
-    create_new_rect_emitter(
+    let emitter = create_new_rect_emitter(
         &mut commands,
         particle_desc,
         Vec2::new(0.0, 6.5),
         Vec2::new(11.5, 0.5),
-        8.0,
+        4.0,
         4,
         0.01,
     );
+    commands.entity(emitter).insert(VictoryParticle);
 }

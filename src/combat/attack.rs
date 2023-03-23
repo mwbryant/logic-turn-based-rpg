@@ -4,7 +4,9 @@ pub struct AttackPlugin;
 
 impl Plugin for AttackPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(despawn_with::<Attack>.in_schedule(OnExit(CombatState::PlayerAttacking)))
+        app.add_system(spawn_player_attack.in_schedule(OnEnter(CombatState::PlayerAttacking)))
+            .add_system(spawn_enemy_attack.in_schedule(OnEnter(CombatState::EnemyAttacking)))
+            .add_system(despawn_with::<Attack>.in_schedule(OnExit(CombatState::PlayerAttacking)))
             .add_system(despawn_with::<Attack>.in_schedule(OnExit(CombatState::EnemyAttacking)))
             .add_system(
                 attack_flow
@@ -25,6 +27,41 @@ pub enum DeathState {
     //TODO handle multiple enemies
     EnemyDied,
     AllEnemiesDead,
+}
+
+pub fn spawn_enemy_attack(
+    mut commands: Commands,
+    player: Query<Entity, With<Player>>,
+    //Without dying enemies
+    enemy: Query<(Entity, &Transform, &Enemy), (Without<Player>, Without<Lifetime>)>,
+) {
+    let (enemy, transform, _) = enemy
+        .iter()
+        .min_by_key(|(_, _, enemy)| enemy.slot)
+        .expect("No enemy to attack");
+
+    let player = player.get_single().expect("One player only!");
+    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
+    let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player, 0);
+    attack.animation.starting_x = transform.translation.x;
+    commands.spawn(attack);
+}
+
+fn spawn_player_attack(
+    mut commands: Commands,
+    player: Query<Entity, With<Player>>,
+    locked_attack: Query<(Entity, &Weapon, &PlayerAttack)>,
+) {
+    let (entity, weapon, attack) = locked_attack.get_single().expect("No attack!");
+    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
+    let player = player.get_single().expect("One player only!");
+
+    commands.entity(entity).insert(weapon.get_attack_bundle(
+        true,
+        player,
+        attack.target,
+        attack.slot,
+    ));
 }
 
 //FIXME really bad and fragile
@@ -74,7 +111,6 @@ fn attack_flow(
                     target: attack.target,
                     player_attacking: matches!(state.0, CombatState::PlayerAttacking),
                     action: attack.action.action_input,
-                    combat_state: state.0.clone(),
                 });
             }
 

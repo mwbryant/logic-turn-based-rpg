@@ -1,5 +1,3 @@
-use std::time;
-
 use crate::prelude::*;
 
 #[derive(Component)]

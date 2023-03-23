@@ -15,4 +15,11 @@ pub mod prelude {
     pub const PARTICLE_Z: f32 = 750.0;
     pub const ICON_Z: f32 = 850.0;
     pub const WORLD_UI_Z: f32 = 999.0;
+
+    #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
+    pub enum GameState {
+        Overworld,
+        #[default]
+        Combat,
+    }
 }

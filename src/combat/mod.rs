@@ -11,8 +11,8 @@ use crate::prelude::*;
 
 use self::{
     animation::CombatAnimationPlugin, attack::AttackPlugin, graphic_effects::GraphicEffectsPlugin,
-    selection::SelectionPlugin, turn_based::TurnBasedPlugin, ui::CombatUIPlugin,
-    weapons::WeaponPlugin,
+    player_wins::PlayerWinsPlugin, selection::SelectionPlugin, turn_based::TurnBasedPlugin,
+    ui::CombatUIPlugin, weapons::WeaponPlugin,
 };
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
@@ -46,6 +46,7 @@ impl Plugin for CombatPlugin {
             .add_plugin(WeaponPlugin)
             .add_plugin(GraphicEffectsPlugin)
             .add_plugin(CombatUIPlugin)
+            .add_plugin(PlayerWinsPlugin)
             .configure_set(CombatSet::Logic.before(CombatSet::Animation))
             .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()
@@ -62,6 +63,9 @@ impl Plugin for CombatPlugin {
             .register_type::<Enemy>();
     }
 }
+
+#[derive(Component)]
+pub struct CombatEntity;
 
 //XXX where does weapon declaration belong
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
@@ -164,7 +168,6 @@ pub struct HitEvent {
     attacker: Entity,
     player_attacking: bool,
     action: ActionTiming,
-    combat_state: CombatState,
 }
 
 pub struct DeathEvent {

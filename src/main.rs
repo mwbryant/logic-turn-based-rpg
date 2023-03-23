@@ -8,25 +8,29 @@ pub const HEIGHT: f32 = 720.0;
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(
-        DefaultPlugins
-            .set(ImagePlugin::default_nearest())
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Logic Game".into(),
-                    resolution: (WIDTH, HEIGHT).into(),
-                    resizable: false,
+    app.add_state::<GameState>()
+        .add_system(despawn_with::<CombatEntity>.in_schedule(OnExit(GameState::Combat)))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Logic Game".into(),
+                        resolution: (WIDTH, HEIGHT).into(),
+                        resizable: false,
+                        ..default()
+                    }),
                     ..default()
-                }),
-                ..default()
-            })
-            .build(),
-    )
-    .add_plugin(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)))
-    .add_startup_system(setup)
-    .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
-    .add_plugin(CombatPlugin)
-    .add_plugin(ArtPlugin);
+                })
+                .build(),
+        )
+        .add_plugin(
+            WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)),
+        )
+        .add_startup_system(setup)
+        .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
+        .add_plugin(CombatPlugin)
+        .add_plugin(ArtPlugin);
 
     app.run();
 }
@@ -64,6 +68,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             defense: 0,
         },
         Name::new("Enemy"),
+        CombatEntity,
     ));
 
     commands.spawn((
@@ -79,6 +84,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             defense: 0,
         },
         Name::new("Enemy"),
+        CombatEntity,
     ));
 
     commands.spawn((
@@ -94,6 +100,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             defense: 0,
         },
         Name::new("Enemy"),
+        CombatEntity,
     ));
 
     commands.spawn((
@@ -104,12 +111,13 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             base_experience_reward: 5,
         },
         CombatStats {
-            health: 2,
-            max_health: 2,
+            health: 4,
+            max_health: 4,
             attack: 1,
             defense: 0,
         },
         Name::new("Enemy"),
+        CombatEntity,
     ));
 
     /*
@@ -137,5 +145,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             ..default()
         },
         Name::new("Background"),
+        CombatEntity,
     ));
 }

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use bevy_easings::Lerp;
 
-use super::turn_based::spawn_enemy_attack;
+use super::attack::spawn_enemy_attack;
 
 pub struct CombatAnimationPlugin;
 
