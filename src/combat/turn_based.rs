@@ -76,8 +76,8 @@ fn deal_damage(mut hit_event: EventReader<HitEvent>, mut combatants: Query<&mut 
 
 fn send_deaths(
     mut hit_event: EventReader<HitEvent>,
-    player: Query<(Entity, &CombatStats), With<Player>>,
-    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+    player: Query<(Entity, &CombatStats), With<PlayerCombat>>,
+    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<PlayerCombat>)>,
     mut death_event: EventWriter<DeathEvent>,
 ) {
     if hit_event.iter().count() > 0 {

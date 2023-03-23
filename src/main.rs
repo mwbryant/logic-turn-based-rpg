@@ -30,6 +30,7 @@ fn main() {
         .add_startup_system(setup)
         .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
         .add_plugin(CombatPlugin)
+        .add_plugin(OverWorldPlugin)
         .add_plugin(ArtPlugin);
 
     app.run();
@@ -45,7 +46,10 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 
     commands.spawn((
         CharacterBundle::new(Vec2::new(-3.0, 0.0), Character::Knight),
-        Player::default(),
+        PlayerCombat::default(),
+        PlayerOverworld {
+            movement_speed: 2.5,
+        },
         CombatStats {
             health: 10,
             max_health: 10,

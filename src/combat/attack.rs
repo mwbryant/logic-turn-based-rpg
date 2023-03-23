@@ -31,9 +31,9 @@ pub enum DeathState {
 
 pub fn spawn_enemy_attack(
     mut commands: Commands,
-    player: Query<Entity, With<Player>>,
+    player: Query<Entity, With<PlayerCombat>>,
     //Without dying enemies
-    enemy: Query<(Entity, &Transform, &Enemy), (Without<Player>, Without<Lifetime>)>,
+    enemy: Query<(Entity, &Transform, &Enemy), (Without<PlayerCombat>, Without<Lifetime>)>,
 ) {
     let (enemy, transform, _) = enemy
         .iter()
@@ -49,7 +49,7 @@ pub fn spawn_enemy_attack(
 
 fn spawn_player_attack(
     mut commands: Commands,
-    player: Query<Entity, With<Player>>,
+    player: Query<Entity, With<PlayerCombat>>,
     locked_attack: Query<(Entity, &Weapon, &PlayerAttack)>,
 ) {
     let (entity, weapon, attack) = locked_attack.get_single().expect("No attack!");
@@ -66,8 +66,8 @@ fn spawn_player_attack(
 
 //FIXME really bad and fragile
 pub fn check_death(
-    player: &Query<(Entity, &CombatStats), With<Player>>,
-    enemy: &Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+    player: &Query<(Entity, &CombatStats), With<PlayerCombat>>,
+    enemy: &Query<(Entity, &CombatStats), (With<Enemy>, Without<PlayerCombat>)>,
 ) -> (DeathState, Option<Entity>) {
     let player = player.get_single().expect("No player");
     let enemy_count = enemy.iter().count();
@@ -98,8 +98,8 @@ fn attack_flow(
     mut hit_event: EventWriter<HitEvent>,
     state: Res<State<CombatState>>,
     mut next_state: ResMut<NextState<CombatState>>,
-    player: Query<(Entity, &CombatStats), With<Player>>,
-    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<Player>)>,
+    player: Query<(Entity, &CombatStats), With<PlayerCombat>>,
+    enemy: Query<(Entity, &CombatStats), (With<Enemy>, Without<PlayerCombat>)>,
 ) {
     for mut attack in &mut attack {
         attack.timer.tick(time.delta());

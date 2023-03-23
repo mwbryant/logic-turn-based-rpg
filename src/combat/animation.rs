@@ -195,7 +195,7 @@ fn spawn_enemy_weapon(
 fn spawn_player_weapon(
     mut commands: Commands,
     locked_attack: Query<&Weapon, With<PlayerAttack>>,
-    player: Query<(Entity, &HandOffset), With<Player>>,
+    player: Query<(Entity, &HandOffset), With<PlayerCombat>>,
 ) {
     let weapon = locked_attack.get_single().expect("No attack selected :(");
     let (player, hand) = player.get_single().expect("No Player");

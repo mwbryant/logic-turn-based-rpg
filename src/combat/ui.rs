@@ -25,7 +25,7 @@ impl Plugin for CombatUIPlugin {
 
 fn update_header_bar_ui(
     mut player_text: Query<&mut Text, With<PlayerHealthUIText>>,
-    player: Query<&CombatStats, With<Player>>,
+    player: Query<&CombatStats, With<PlayerCombat>>,
 ) {
     let player = player.get_single().expect("More than 1 player?");
     let mut player_text = player_text

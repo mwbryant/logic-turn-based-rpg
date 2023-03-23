@@ -26,7 +26,7 @@ impl Plugin for SelectionPlugin {
 fn lock_in_attack(
     mut commands: Commands,
     selection: Query<&CurrentSelectedMenuItem, With<SelectionIcon>>,
-    enemy: Query<(Entity, &Enemy), Without<Player>>,
+    enemy: Query<(Entity, &Enemy), Without<PlayerCombat>>,
     weapon_icons: Query<(&WeaponIcon, &Weapon)>,
 ) {
     let (entity, enemy) = enemy

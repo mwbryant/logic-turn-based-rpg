@@ -1,11 +1,13 @@
 #![allow(clippy::type_complexity)]
 mod art;
 mod combat;
+mod overworld;
 mod utils;
 
 pub mod prelude {
     pub use crate::art::*;
     pub use crate::combat::*;
+    pub use crate::overworld::*;
     pub use crate::utils::*;
     pub use bevy::{prelude::*, utils::HashMap};
 

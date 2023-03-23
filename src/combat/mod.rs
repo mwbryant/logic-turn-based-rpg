@@ -50,7 +50,7 @@ impl Plugin for CombatPlugin {
             .configure_set(CombatSet::Logic.before(CombatSet::Animation))
             .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()
-            .register_type::<Player>()
+            .register_type::<PlayerCombat>()
             .register_type::<CurrentSelectedMenuItem>()
             .register_type::<SelectionIcon>()
             .register_type::<PlayerAttack>()
@@ -103,7 +103,7 @@ pub struct CombatStats {
 }
 
 #[derive(Component, Default, Reflect)]
-pub struct Player {
+pub struct PlayerCombat {
     pub experience: i32,
     pub level: i32,
 }
