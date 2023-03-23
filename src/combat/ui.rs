@@ -20,8 +20,24 @@ impl Plugin for CombatUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_enemy_health_ui.in_base_set(StartupSet::PostStartup))
             .add_startup_system(spawn_header_bar_ui.in_base_set(StartupSet::PostStartup))
+            .add_system(update_header_bar_ui)
             .add_system(update_enemy_health_ui);
     }
+}
+
+fn update_header_bar_ui(
+    mut player_text: Query<&mut Text, With<PlayerHealthUIText>>,
+    player: Query<&CombatStats, With<Player>>,
+) {
+    let player = player.get_single().expect("More than 1 player?");
+    let mut player_text = player_text
+        .get_single_mut()
+        .expect("More than 1 health bar?");
+    player_text.sections[0].value = format!(
+        "{:?} / {:?}",
+        player.health.clamp(0, 9999),
+        player.max_health
+    );
 }
 
 fn spawn_header_bar_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
