@@ -1,13 +1,13 @@
+use bevy_inspector_egui::egui::Ui;
+
 use crate::prelude::*;
 
 pub struct CombatUIPlugin;
 
-impl Plugin for CombatUIPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_enemy_health_ui.in_base_set(StartupSet::PostStartup))
-            .add_system(update_enemy_health_ui);
-    }
-}
+#[derive(Component)]
+pub struct HeaderBarUI;
+#[derive(Component)]
+pub struct PlayerHealthUIText;
 
 #[derive(Component)]
 pub struct EnemyHealthUI(pub Entity);
@@ -16,28 +16,161 @@ pub struct EnemyHealthUIText(pub Entity);
 #[derive(Component)]
 pub struct EnemyHealthUIBar(pub Entity);
 
+impl Plugin for CombatUIPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(spawn_enemy_health_ui.in_base_set(StartupSet::PostStartup))
+            .add_startup_system(spawn_header_bar_ui.in_base_set(StartupSet::PostStartup))
+            .add_system(update_enemy_health_ui);
+    }
+}
+
+fn spawn_header_bar_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let font = asset_server.load("fonts/pointfree.ttf");
+
+    let parent_node = (
+        NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.0), Val::Percent(15.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Row,
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            //background_color: BackgroundColor(Color::WHITE),
+            ..default()
+        },
+        HeaderBarUI,
+        Name::new("Header Bar UI"),
+    );
+
+    let column_1 = (NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(33.3), Val::Percent(100.0)),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::FlexStart,
+            flex_direction: FlexDirection::Column,
+            padding: UiRect::all(Val::Percent(2.0)),
+            ..default()
+        },
+        //background_color: BackgroundColor(Color::BLUE),
+        ..default()
+    },);
+
+    let column_2 = (NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(66.6), Val::Percent(100.0)),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        //background_color: BackgroundColor(Color::GREEN),
+        ..default()
+    },);
+
+    let player_health_background = (NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::SpaceBetween,
+            flex_direction: FlexDirection::Row,
+            padding: UiRect::right(Val::Percent(1.0)),
+            ..default()
+        },
+        background_color: BackgroundColor(Color::PINK),
+        ..default()
+    },);
+
+    let player_icon = (ImageBundle {
+        style: Style {
+            size: Size::new(Val::Auto, Val::Percent(200.0)),
+            ..default()
+        },
+        image: UiImage::new(asset_server.load("characters/PlayerIcon.png")),
+        ..default()
+    },);
+
+    let health_text = (
+        TextBundle::from_section(
+            "10 / 10",
+            TextStyle {
+                font,
+                font_size: 36.0,
+                color: Color::WHITE,
+            },
+        )
+        .with_text_alignment(TextAlignment::Center),
+        PlayerHealthUIText,
+    );
+
+    commands.spawn(parent_node).with_children(|commands| {
+        commands.spawn(column_1).with_children(|commands| {
+            commands
+                .spawn(player_health_background)
+                .with_children(|commands| {
+                    commands.spawn(player_icon);
+                    commands.spawn(health_text);
+                });
+        });
+        commands.spawn(column_2);
+    });
+}
+
 fn update_enemy_health_ui(
     mut commands: Commands,
-    enemies: Query<&CombatStats>,
-    parent: Query<(Entity, &EnemyHealthUI)>,
-    mut bar: Query<(&mut Style, &EnemyHealthUIBar)>,
+    enemies: Query<(&Enemy, &CombatStats)>,
+    mut parent: Query<(Entity, &mut Style, &EnemyHealthUI)>,
+    camera: Query<(&Camera, &GlobalTransform)>,
+    mut bar: Query<(&mut Style, &EnemyHealthUIBar), Without<EnemyHealthUI>>,
     mut text: Query<(&mut Text, &EnemyHealthUIText)>,
 ) {
-    //Despawn all if connect entity is dead
-    for (parent, attached) in &parent {
-        if enemies.get(attached.0).is_err() {
+    let (camera, transform) = camera.single();
+
+    for (parent, mut style, attached) in &mut parent {
+        if let Ok((enemy, _stats)) = enemies.get(attached.0) {
+            let x = match enemy.slot {
+                0 => 0.1,
+                1 => 1.3,
+                2 => 2.5,
+                3 => 3.7,
+                _ => unreachable!("Bad slot"),
+            };
+            let mut coords_top_left = camera
+                .world_to_viewport(transform, Vec3::new(x, -0.6, 0.0))
+                .unwrap();
+            let mut coords_bottom_right = camera
+                .world_to_viewport(transform, Vec3::new(x + 1.0, -1.0, 0.0))
+                .unwrap();
+            //Ugh I think bevy flipped UI after this function was added...
+            coords_top_left.y = camera.logical_viewport_size().unwrap().y - coords_top_left.y;
+            coords_bottom_right.y =
+                camera.logical_viewport_size().unwrap().y - coords_bottom_right.y;
+
+            style.size = Size::new(
+                Val::Px(coords_bottom_right.x - coords_top_left.x),
+                Val::Px(coords_bottom_right.y - coords_top_left.y),
+            );
+            style.position = UiRect {
+                top: Val::Px(coords_top_left.y),
+                left: Val::Px(coords_top_left.x),
+                bottom: Val::Px(coords_bottom_right.y),
+                right: Val::Px(coords_bottom_right.x),
+            };
+        } else {
+            //Despawn all if connect entity is dead
             commands.entity(parent).despawn_recursive();
         }
     }
 
     for (mut bar, attached) in &mut bar {
-        if let Ok(enemy) = enemies.get(attached.0) {
+        if let Ok((_, enemy)) = enemies.get(attached.0) {
             bar.size.width = Val::Percent(enemy.health as f32 / enemy.max_health as f32 * 100.0);
         }
     }
 
     for (mut text, attached) in &mut text {
-        if let Ok(enemy) = enemies.get(attached.0) {
+        if let Ok((_, enemy)) = enemies.get(attached.0) {
             text.sections[0].value =
                 format!("{:?}/{:?}", enemy.health.clamp(0, 9999), enemy.max_health);
         }
@@ -48,46 +181,25 @@ fn update_enemy_health_ui(
 fn spawn_enemy_health_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    enemies: Query<(Entity, &Enemy)>,
-    camera: Query<(&Camera, &GlobalTransform)>,
+    enemies: Query<Entity, With<Enemy>>,
 ) {
     let font = asset_server.load("fonts/pointfree.ttf");
-    let (camera, transform) = camera.single();
 
-    for (entity, enemy) in &enemies {
-        let x = match enemy.slot {
-            0 => 0.1,
-            1 => 1.3,
-            2 => 2.5,
-            3 => 3.7,
-            _ => unreachable!("Bad slot"),
-        };
-
-        let mut coords = camera
-            .world_to_viewport(transform, Vec3::new(x, -0.6, 0.0))
-            .unwrap();
-        //Ugh I think bevy flipped UI after this function was added...
-        coords.y = camera.logical_viewport_size().unwrap().y - coords.y;
-
+    for entity in &enemies {
+        // Size and Position setup in update
         let parent_node = (
             NodeBundle {
                 style: Style {
-                    //TODO can I get the bottom corner from world space too?
-                    size: Size::new(Val::Percent(6.8), Val::Percent(5.)),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
                     position_type: PositionType::Absolute,
-                    position: UiRect {
-                        top: Val::Px(coords.y),
-                        left: Val::Px(coords.x),
-                        ..default()
-                    },
                     ..default()
                 },
                 ..default()
             },
             EnemyHealthUI(entity),
+            Name::new("Enemy Health Bar UI"),
         );
 
         let outline_node = NodeBundle {
@@ -133,12 +245,7 @@ fn spawn_enemy_health_ui(
                     color: Color::WHITE,
                 },
             )
-            .with_text_alignment(TextAlignment::Center)
-            .with_style(Style {
-                position_type: PositionType::Relative,
-                position: UiRect { ..default() },
-                ..default()
-            }),
+            .with_text_alignment(TextAlignment::Center),
             EnemyHealthUIText(entity),
         );
 
