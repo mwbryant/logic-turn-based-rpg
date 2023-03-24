@@ -108,7 +108,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     ));
 
     commands.spawn((
-        CharacterBundle::new(Vec2::new(4.2, 0.0), Character::GreenBase),
+        CharacterBundle::new(Vec2::new(4.2, 0.0), Character::ManOld),
         Enemy {
             //TODO use slots to look up into a resource for x,y and ui positioning
             slot: 3,
