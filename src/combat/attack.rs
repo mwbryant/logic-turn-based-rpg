@@ -41,7 +41,6 @@ pub fn spawn_enemy_attack(
         .expect("No enemy to attack");
 
     let player = player.get_single().expect("One player only!");
-    //This might all need to be reworked, maybe the weapon creates it's whole attack comp...
     let mut attack = Weapon::BasicSpear.get_attack_bundle(false, enemy, player, 0);
     attack.animation.starting_x = transform.translation.x;
     commands.spawn(attack);

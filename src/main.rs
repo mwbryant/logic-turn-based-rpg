@@ -2,7 +2,7 @@ use bevy::{input::common_conditions::input_toggle_active, render::camera::Scalin
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
-pub const WIDTH: f32 = 1080.0;
+pub const WIDTH: f32 = 1280.0;
 pub const HEIGHT: f32 = 720.0;
 
 fn main() {
@@ -58,6 +58,8 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
         Name::new("Player"),
     ));
+
+    /*
 
     commands.spawn((
         CharacterBundle::new(Vec2::new(0.6, 0.0), Character::GreenBase),
@@ -151,4 +153,5 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         Name::new("Background"),
         CombatEntity,
     ));
+    */
 }

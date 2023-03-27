@@ -191,7 +191,6 @@ fn update_enemy_health_ui(
     }
 }
 
-//FIXME doesn't survive resizing
 fn spawn_enemy_health_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,

@@ -1,16 +1,11 @@
 use crate::prelude::*;
 
-pub struct OverWorldPlugin;
+pub struct PlayerPlugin;
 
-impl Plugin for OverWorldPlugin {
+impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(player_movement.in_set(OnUpdate(GameState::Overworld)));
     }
-}
-
-#[derive(Component)]
-pub struct PlayerOverworld {
-    pub movement_speed: f32,
 }
 
 fn player_movement(

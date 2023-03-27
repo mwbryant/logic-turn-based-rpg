@@ -20,8 +20,8 @@ pub mod prelude {
 
     #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
     pub enum GameState {
-        Overworld,
         #[default]
+        Overworld,
         Combat,
     }
 }
