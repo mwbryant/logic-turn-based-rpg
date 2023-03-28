@@ -58,73 +58,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     ));
 
     /*
-
-    commands.spawn((
-        CharacterBundle::new(Vec2::new(0.6, 0.0), Character::GreenBase),
-        Enemy {
-            slot: 0,
-            base_experience_reward: 5,
-        },
-        CombatStats {
-            health: 2,
-            max_health: 2,
-            attack: 1,
-            defense: 0,
-        },
-        Name::new("Enemy"),
-        CombatEntity,
-    ));
-
-    commands.spawn((
-        CharacterBundle::new(Vec2::new(1.8, 0.0), Character::GreenBase),
-        Enemy {
-            slot: 1,
-            base_experience_reward: 5,
-        },
-        CombatStats {
-            health: 2,
-            max_health: 2,
-            attack: 1,
-            defense: 0,
-        },
-        Name::new("Enemy"),
-        CombatEntity,
-    ));
-
-    commands.spawn((
-        CharacterBundle::new(Vec2::new(3.0, 0.0), Character::GreenBase),
-        Enemy {
-            slot: 2,
-            base_experience_reward: 5,
-        },
-        CombatStats {
-            health: 2,
-            max_health: 2,
-            attack: 1,
-            defense: 0,
-        },
-        Name::new("Enemy"),
-        CombatEntity,
-    ));
-
-    commands.spawn((
-        CharacterBundle::new(Vec2::new(4.2, 0.0), Character::ManOld),
-        Enemy {
-            //TODO use slots to look up into a resource for x,y and ui positioning
-            slot: 3,
-            base_experience_reward: 5,
-        },
-        CombatStats {
-            health: 4,
-            max_health: 4,
-            attack: 1,
-            defense: 0,
-        },
-        Name::new("Enemy"),
-        CombatEntity,
-    ));
-
-    /*
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -135,21 +68,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             ..default()
         },
         Name::new("WhiteDot"),
-    ));
-    */
-
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(11.0, 7.0)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, -1.2, BACKGROUND_Z),
-            texture: assets.load("Stage.png"),
-            ..default()
-        },
-        Name::new("Background"),
-        CombatEntity,
     ));
     */
 }

@@ -1,0 +1,16 @@
+EnemyOverworld(
+    movement_speed: 0.3,
+    chase_movement_speed: 2.3,
+    home: (2.0, 3.0),
+    direction: (0.0, 1.0),
+    new_direction_timer: (
+        duration: (secs: 1, nanos: 0),
+        mode: Repeating,
+        stopwatch: (elapsed: (secs: 0, nanos: 0), paused: false),
+        finished: false,
+        times_finished_this_tick: 0,
+    ),
+    wander_range: 1.5,
+    follow_range: 1.0,
+    combat_ref: "config/basic_combat.ron"
+)

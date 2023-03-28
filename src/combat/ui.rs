@@ -16,7 +16,7 @@ pub struct EnemyHealthUIBar(pub Entity);
 
 impl Plugin for CombatUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_enemy_health_ui.in_base_set(StartupSet::PostStartup))
+        app.add_system(spawn_enemy_health_ui.in_schedule(OnEnter(GameState::Combat)))
             .add_startup_system(spawn_header_bar_ui.in_base_set(StartupSet::PostStartup))
             .add_system(update_header_bar_ui)
             .add_system(update_enemy_health_ui);

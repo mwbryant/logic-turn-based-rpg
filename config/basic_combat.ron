@@ -1,1 +1,29 @@
-CombatDescriptor()
+CombatDescriptor(
+enemies: [
+    (
+        Enemy (
+            slot: 2,
+            base_experience_reward: 5,
+        ),
+        CombatStats (
+            health: 4,
+            max_health: 4,
+            attack: 1,
+            defense: 0,
+        ),
+        ManOld,
+    ),
+    (
+        Enemy (
+            slot: 3,
+            base_experience_reward: 5,
+        ),
+        CombatStats (
+            health: 4,
+            max_health: 4,
+            attack: 1,
+            defense: 0,
+        ),
+        GreenBase,
+    ),
+])

@@ -1,6 +1,7 @@
 mod animation;
 mod particles;
 pub mod sprite_sheets;
+use serde::{Deserialize, Serialize};
 pub use sprite_sheets::*;
 
 use crate::prelude::*;
@@ -124,7 +125,7 @@ pub enum Icon {
     Pointer,
 }
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect, Serialize, Deserialize)]
 pub enum Character {
     #[default]
     WhiteBase,

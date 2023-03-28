@@ -44,4 +44,6 @@ pub struct EnemyOverworld {
 }
 
 #[derive(Component, Serialize, Deserialize)]
-pub struct CombatDescriptor {}
+pub struct CombatDescriptor {
+    enemies: Vec<(Enemy, CombatStats, Character)>,
+}

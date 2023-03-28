@@ -3,16 +3,19 @@ pub mod attack;
 pub mod graphic_effects;
 pub mod player_wins;
 pub mod selection;
+pub mod start_combat;
 pub mod turn_based;
 pub mod ui;
 pub mod weapons;
+
+use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
 use self::{
     animation::CombatAnimationPlugin, attack::AttackPlugin, graphic_effects::GraphicEffectsPlugin,
-    player_wins::PlayerWinsPlugin, selection::SelectionPlugin, turn_based::TurnBasedPlugin,
-    ui::CombatUIPlugin, weapons::WeaponPlugin,
+    player_wins::PlayerWinsPlugin, selection::SelectionPlugin, start_combat::StartCombatPlugin,
+    turn_based::TurnBasedPlugin, ui::CombatUIPlugin, weapons::WeaponPlugin,
 };
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
@@ -48,6 +51,7 @@ impl Plugin for CombatPlugin {
             .add_plugin(GraphicEffectsPlugin)
             .add_plugin(CombatUIPlugin)
             .add_plugin(PlayerWinsPlugin)
+            .add_plugin(StartCombatPlugin)
             .configure_set(CombatSet::Logic.before(CombatSet::Animation))
             .configure_set(CombatSet::CleanUp.after(CombatSet::Animation))
             .register_type::<CombatStats>()
@@ -95,7 +99,7 @@ pub struct AttackAnimation {
     pub max_weapon_rotation: f32,
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Serialize, Deserialize, Clone, Copy)]
 pub struct CombatStats {
     pub health: i32,
     pub max_health: i32,
@@ -133,7 +137,7 @@ pub struct EnemyAttack;
 #[derive(Component, Reflect)]
 pub struct WeaponIcon(pub i32);
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Serialize, Deserialize, Clone, Copy)]
 pub struct Enemy {
     pub slot: usize,
     pub base_experience_reward: i32,
