@@ -30,6 +30,9 @@ pub struct PlayerOverworld {
     pub movement_speed: f32,
 }
 
+#[derive(Component)]
+pub struct OverworldEntity;
+
 #[derive(Component, Serialize, Deserialize)]
 pub struct EnemyOverworld {
     pub movement_speed: f32,

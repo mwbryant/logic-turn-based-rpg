@@ -10,6 +10,7 @@ fn main() {
 
     app.add_state::<GameState>()
         .add_system(despawn_with::<CombatEntity>.in_schedule(OnExit(GameState::Combat)))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())

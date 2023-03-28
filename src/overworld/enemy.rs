@@ -11,12 +11,14 @@ impl Plugin for EnemyPlugin {
         app.add_startup_system(setup_test)
             .add_system(enemy_start_combat.in_set(OnUpdate(OverworldState::FreeRoam)))
             .add_system(enemy_wander.in_set(OnUpdate(OverworldState::FreeRoam)))
+            .add_system(camera_follow.in_set(OnUpdate(OverworldState::FreeRoam)))
             .add_system(despawn_with::<EnemyOverworld>.in_schedule(OnExit(GameState::Overworld)))
+            .add_system(despawn_with::<OverworldEntity>.in_schedule(OnExit(GameState::Overworld)))
             .add_system(start_combat.in_set(OnUpdate(OverworldState::CombatStarting)));
     }
 }
 
-fn setup_test(mut commands: Commands) {
+fn setup_test(mut commands: Commands, assets: Res<AssetServer>) {
     let enemies = ["config/basic_enemy.ron", "config/basic_enemy2.ron"];
 
     for config in enemies {
@@ -26,6 +28,29 @@ fn setup_test(mut commands: Commands) {
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
         commands.spawn((enemy, character, Name::new("Enemy")));
     }
+
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(48.0, 27.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
+            texture: assets.load("Background_Mockup.png"),
+            ..default()
+        },
+        Name::new("Background"),
+        OverworldEntity,
+    ));
+}
+
+fn camera_follow(
+    mut camera: Query<&mut Transform, With<Camera>>,
+    player: Query<&Transform, (With<PlayerOverworld>, Without<Camera>)>,
+) {
+    let mut camera = camera.single_mut();
+    let player = player.single();
+    camera.translation = player.translation.truncate().extend(999.0);
 }
 
 //TODO Use physics or enemy holds range
@@ -49,6 +74,7 @@ fn enemy_start_combat(
     }
 }
 
+//FIXME move this logic to combat
 fn start_combat(
     mut commands: Commands,
     combat_descriptor: Query<&CombatDescriptor>,
@@ -72,6 +98,20 @@ fn start_combat(
             let character = CharacterBundle::new(Vec2::new(x, 0.0), character.clone());
             commands.spawn((character, *enemy, *stats, Name::new("Enemy"), CombatEntity));
         }
+
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(26.0, 11.0)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z - 0.1),
+                texture: assets.load("CaveBackground.png"),
+                ..default()
+            },
+            Name::new("Background"),
+            CombatEntity,
+        ));
 
         commands.spawn((
             SpriteBundle {

@@ -8,7 +8,12 @@ impl Plugin for StartCombatPlugin {
     }
 }
 
-fn setup_combat(mut player: Query<&mut Transform, With<PlayerCombat>>) {
+fn setup_combat(
+    mut player: Query<&mut Transform, With<PlayerCombat>>,
+    mut camera: Query<&mut Transform, (With<Camera>, Without<PlayerCombat>)>,
+) {
     let mut player = player.single_mut();
     player.translation = Vec3::new(-3.0, 0.0, CHARACTER_Z);
+    let mut camera = camera.single_mut();
+    camera.translation = Vec3::new(0.0, 0.0, 999.0);
 }
