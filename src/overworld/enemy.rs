@@ -2,13 +2,15 @@ use std::time::Duration;
 
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{comp_from_config, prelude::*};
 
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_test).add_system(enemy_wander);
+        app.add_startup_system(setup_test)
+            .add_system(enemy_start_combat.in_set(OnUpdate(OverworldState::FreeRoam)))
+            .add_system(enemy_wander.in_set(OnUpdate(OverworldState::FreeRoam)));
     }
 }
 
@@ -16,20 +18,32 @@ fn setup_test(mut commands: Commands) {
     let homes = [Vec2::new(1.0, 0.5), Vec2::new(-2.0, -3.0)];
 
     for home in homes {
-        commands.spawn((
-            CharacterBundle::new(home, Character::GreenBase),
-            EnemyOverworld {
-                movement_speed: 0.3,
-                chase_movement_speed: 2.3,
-                home,
-                direction: Vec2::ONE,
-                new_direction_timer: Timer::from_seconds(0.01, TimerMode::Repeating),
-                wander_range: 1.5,
-                follow_range: 1.0,
-                combat_ref: "".to_string(),
-            },
-            Name::new("Enemy"),
-        ));
+        //FIXME windows uses \ .. fix in macro
+        let enemy = comp_from_config!(EnemyOverworld, "config/basic_enemy.ron");
+        let mut character = CharacterBundle::new(enemy.home, Character::GreenBase);
+        character.sprite_sheet.transform.translation.z = ENEMY_Z;
+        commands.spawn((enemy, character, Name::new("Enemy")));
+    }
+}
+
+//TODO Use physics or enemy holds range
+fn enemy_start_combat(
+    mut commands: Commands,
+    enemies: Query<(&Transform, &EnemyOverworld)>,
+    player: Query<&Transform, (With<PlayerOverworld>, Without<EnemyOverworld>)>,
+    mut overworld_state: ResMut<NextState<OverworldState>>,
+) {
+    let transform = player.get_single().expect("Only 1 Player");
+    for (enemy_transform, enemy) in &enemies {
+        if Vec2::distance(
+            transform.translation.truncate(),
+            enemy_transform.translation.truncate(),
+        ) < 0.5
+        {
+            commands.spawn(comp_from_config!(CombatDescriptor, &enemy.combat_ref));
+            overworld_state.set(OverworldState::CombatStarting);
+            return;
+        }
     }
 }
 

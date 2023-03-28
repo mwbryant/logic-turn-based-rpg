@@ -1,17 +1,27 @@
 mod enemy;
 mod player;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
 use self::{enemy::EnemyPlugin, player::PlayerPlugin};
 
+#[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
+pub enum OverworldState {
+    #[default]
+    FreeRoam,
+    CombatStarting,
+    NotInOverworld,
+}
+
 pub struct OverWorldPlugin;
 
 impl Plugin for OverWorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(PlayerPlugin).add_plugin(EnemyPlugin);
+        app.add_state::<OverworldState>()
+            .add_plugin(PlayerPlugin)
+            .add_plugin(EnemyPlugin);
     }
 }
 
@@ -20,7 +30,7 @@ pub struct PlayerOverworld {
     pub movement_speed: f32,
 }
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize)]
 pub struct EnemyOverworld {
     pub movement_speed: f32,
     pub chase_movement_speed: f32,
@@ -32,3 +42,6 @@ pub struct EnemyOverworld {
     // TODO
     pub combat_ref: String,
 }
+
+#[derive(Component, Serialize, Deserialize)]
+pub struct CombatDescriptor {}

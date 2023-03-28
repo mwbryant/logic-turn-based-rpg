@@ -10,7 +10,7 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = {version = "0.10", features = ["dynamic_linking"] }
+bevy = {version = "0.10", features = ["dynamic_linking", "serialize"] }
 bevy_rapier2d = "0.21"
 bevy-inspector-egui = { version = "0.18.0", default-features = false, features = ["bevy_pbr"] }
 egui_dock = "0.4"

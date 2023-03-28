@@ -86,7 +86,7 @@ pub struct WeaponBundle {
 #[derive(Bundle)]
 pub struct CharacterBundle {
     #[bundle]
-    sprite_sheet: SpriteSheetBundle,
+    pub sprite_sheet: SpriteSheetBundle,
     hand_offset: HandOffset,
     character: Character,
 }

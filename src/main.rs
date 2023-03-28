@@ -48,9 +48,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         CharacterBundle::new(Vec2::new(-3.0, 0.0), Character::Knight),
         PlayerCombat::default(),
         comp_from_config!(PlayerOverworld, "config/player_overworld.ron"),
-        //PlayerOverworld {
-        //movement_speed: 2.5,
-        //},
         CombatStats {
             health: 10,
             max_health: 10,

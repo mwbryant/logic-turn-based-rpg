@@ -4,7 +4,11 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(player_movement.in_set(OnUpdate(GameState::Overworld)));
+        app.add_system(
+            player_movement
+                .in_set(OnUpdate(GameState::Overworld))
+                .in_set(OnUpdate(OverworldState::FreeRoam)),
+        );
     }
 }
 
