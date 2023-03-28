@@ -1,6 +1,8 @@
 mod enemy;
 mod player;
 
+use serde::Deserialize;
+
 use crate::prelude::*;
 
 use self::{enemy::EnemyPlugin, player::PlayerPlugin};
@@ -13,7 +15,7 @@ impl Plugin for OverWorldPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Deserialize)]
 pub struct PlayerOverworld {
     pub movement_speed: f32,
 }

@@ -1,6 +1,6 @@
 use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use logic_turn_based_rpg::prelude::*;
+use logic_turn_based_rpg::{comp_from_config, prelude::*};
 
 pub const WIDTH: f32 = 1280.0;
 pub const HEIGHT: f32 = 720.0;
@@ -47,9 +47,10 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn((
         CharacterBundle::new(Vec2::new(-3.0, 0.0), Character::Knight),
         PlayerCombat::default(),
-        PlayerOverworld {
-            movement_speed: 2.5,
-        },
+        comp_from_config!(PlayerOverworld, "config/player_overworld.ron"),
+        //PlayerOverworld {
+        //movement_speed: 2.5,
+        //},
         CombatStats {
             health: 10,
             max_health: 10,
