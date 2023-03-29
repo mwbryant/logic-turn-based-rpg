@@ -33,18 +33,21 @@ fn lock_in_attack(
         .iter()
         .min_by_key(|(_, enemy)| enemy.slot)
         .expect("No enemy to target");
+    info!("Locking in attack");
 
     let selection = selection.single();
     let slot = selection.selection.rem_euclid(selection.slots);
 
     for (icon, weapon) in &weapon_icons {
         if icon.0 == slot {
+            info!("Attacked locked");
             commands.spawn((
                 weapon.clone(),
                 PlayerAttack {
                     target: entity,
                     slot: enemy.slot,
                 },
+                CombatEntity,
             ));
             return;
         }

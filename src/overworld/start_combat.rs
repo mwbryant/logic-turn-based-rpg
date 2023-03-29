@@ -24,6 +24,7 @@ fn start_combat(
         if !fadeout.fade_in_just_finished {
             return;
         }
+        info!("Starting Combat");
     } else {
         warn!("No fadeout for entering combat!");
     }

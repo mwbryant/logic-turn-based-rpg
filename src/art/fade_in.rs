@@ -39,7 +39,7 @@ fn update_fadeout(
     mut fadeout: Query<(Entity, &mut BackgroundColor, &mut Fadeout)>,
     time: Res<Time>,
 ) {
-    if let Ok((entity, mut color, mut fadeout)) = fadeout.get_single_mut() {
+    for (entity, mut color, mut fadeout) in &mut fadeout {
         fadeout.fade_in_just_finished = false;
         match fadeout.state {
             FadeoutState::FadingIn => {
