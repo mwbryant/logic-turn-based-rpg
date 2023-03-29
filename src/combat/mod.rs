@@ -72,6 +72,9 @@ impl Plugin for CombatPlugin {
 #[derive(Component)]
 pub struct CombatEntity;
 
+#[derive(Component)]
+pub struct VictoryFadeout;
+
 //XXX where does weapon declaration belong
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Weapon {

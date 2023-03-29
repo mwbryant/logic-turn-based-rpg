@@ -1,4 +1,5 @@
 mod animation;
+mod fade_in;
 mod particles;
 pub mod sprite_sheets;
 use serde::{Deserialize, Serialize};
@@ -6,9 +7,11 @@ pub use sprite_sheets::*;
 
 use crate::prelude::*;
 
+pub use fade_in::spawn_fadeout;
 pub use particles::create_new_rect_emitter;
 
 use self::animation::AnimationPlugin;
+use self::fade_in::FadeInPlugin;
 use self::particles::ParticlePlugin;
 
 pub struct ArtPlugin;
@@ -18,14 +21,32 @@ impl Plugin for ArtPlugin {
         app.add_plugin(SpriteSheetPlugin)
             .add_plugin(ParticlePlugin)
             .add_plugin(AnimationPlugin)
+            .add_plugin(FadeInPlugin)
             .register_type::<Icon>()
             .register_type::<Particle>()
             .register_type::<FallingParticle>()
             .register_type::<FadingParticle>()
             .register_type::<RadialParticle>()
+            .register_type::<Fadeout>()
             .register_type::<RotatingParticle>()
             .register_type::<Character>();
     }
+}
+
+#[derive(Reflect)]
+pub enum FadeoutState {
+    FadingIn,
+    Hold,
+    FadingOut,
+}
+
+#[derive(Component, Reflect)]
+pub struct Fadeout {
+    pub fade_in_just_finished: bool,
+    in_timer: Timer,
+    hold_timer: Timer,
+    out_timer: Timer,
+    state: FadeoutState,
 }
 
 #[derive(Component, Reflect)]
