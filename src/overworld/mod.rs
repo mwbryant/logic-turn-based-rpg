@@ -1,11 +1,12 @@
 mod enemy;
 mod player;
+mod room;
 
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
-use self::{enemy::EnemyPlugin, player::PlayerPlugin};
+use self::{enemy::EnemyPlugin, player::PlayerPlugin, room::RoomPlugin};
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
 pub enum OverworldState {
@@ -21,6 +22,7 @@ impl Plugin for OverWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<OverworldState>()
             .add_plugin(PlayerPlugin)
+            .add_plugin(RoomPlugin)
             .add_plugin(EnemyPlugin);
     }
 }
@@ -46,7 +48,18 @@ pub struct EnemyOverworld {
     pub combat_ref: String,
 }
 
+//For lookup in room
+#[derive(Component, Serialize, Deserialize)]
+pub struct EnemyId(pub usize);
+
 #[derive(Component, Serialize, Deserialize)]
 pub struct CombatDescriptor {
     enemies: Vec<(Enemy, CombatStats, Character)>,
+}
+
+#[derive(Resource)]
+pub struct CurrentRoom {
+    pub current_player_translation: Vec3,
+    pub background_image: String,
+    pub enemies: Vec<(usize, String, Vec3)>,
 }

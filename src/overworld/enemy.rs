@@ -8,60 +8,25 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_test)
-            .add_system(enemy_start_combat.in_set(OnUpdate(OverworldState::FreeRoam)))
+        app.add_system(enemy_start_combat.in_set(OnUpdate(OverworldState::FreeRoam)))
             .add_system(enemy_wander.in_set(OnUpdate(OverworldState::FreeRoam)))
-            .add_system(camera_follow.in_set(OnUpdate(OverworldState::FreeRoam)))
             .add_system(despawn_with::<EnemyOverworld>.in_schedule(OnExit(GameState::Overworld)))
             .add_system(despawn_with::<OverworldEntity>.in_schedule(OnExit(GameState::Overworld)))
             .add_system(start_combat.in_set(OnUpdate(OverworldState::CombatStarting)));
     }
 }
 
-fn setup_test(mut commands: Commands, assets: Res<AssetServer>) {
-    let enemies = ["config/basic_enemy.ron", "config/basic_enemy2.ron"];
-
-    for config in enemies {
-        //FIXME windows uses \ .. fix in macro
-        let enemy = comp_from_config!(EnemyOverworld, config);
-        let mut character = CharacterBundle::new(enemy.home, Character::GreenBase);
-        character.sprite_sheet.transform.translation.z = ENEMY_Z;
-        commands.spawn((enemy, character, Name::new("Enemy")));
-    }
-
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(48.0, 27.0)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
-            texture: assets.load("Background_Mockup.png"),
-            ..default()
-        },
-        Name::new("Background"),
-        OverworldEntity,
-    ));
-}
-
-fn camera_follow(
-    mut camera: Query<&mut Transform, With<Camera>>,
-    player: Query<&Transform, (With<PlayerOverworld>, Without<Camera>)>,
-) {
-    let mut camera = camera.single_mut();
-    let player = player.single();
-    camera.translation = player.translation.truncate().extend(999.0);
-}
-
 //TODO Use physics or enemy holds range
 fn enemy_start_combat(
     mut commands: Commands,
-    enemies: Query<(&Transform, &EnemyOverworld)>,
+    enemies: Query<(&Transform, &EnemyOverworld, &EnemyId)>,
     player: Query<&Transform, (With<PlayerOverworld>, Without<EnemyOverworld>)>,
+    //TODO shouldn't remove from room if player runs from battle
+    mut room: ResMut<CurrentRoom>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
 ) {
     let transform = player.get_single().expect("Only 1 Player");
-    for (enemy_transform, enemy) in &enemies {
+    for (enemy_transform, enemy, id) in &enemies {
         if Vec2::distance(
             transform.translation.truncate(),
             enemy_transform.translation.truncate(),
@@ -69,6 +34,7 @@ fn enemy_start_combat(
         {
             commands.spawn(comp_from_config!(CombatDescriptor, &enemy.combat_ref));
             overworld_state.set(OverworldState::CombatStarting);
+            room.enemies.retain(|(room_id, _, _)| *room_id != id.0);
             return;
         }
     }
@@ -77,7 +43,7 @@ fn enemy_start_combat(
 //FIXME move this logic to combat
 fn start_combat(
     mut commands: Commands,
-    combat_descriptor: Query<&CombatDescriptor>,
+    combat_descriptor: Query<(Entity, &CombatDescriptor)>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
     mut main_game_state: ResMut<NextState<GameState>>,
     // TODO combat state for starting
@@ -85,7 +51,8 @@ fn start_combat(
     assets: Res<AssetServer>,
 ) {
     assert!(combat_descriptor.iter().count() <= 1);
-    for combat_desc in &combat_descriptor {
+    for (entity, combat_desc) in &combat_descriptor {
+        commands.entity(entity).despawn_recursive();
         info!("Starting combat");
         for (enemy, stats, character) in combat_desc.enemies.iter() {
             let x = match enemy.slot {

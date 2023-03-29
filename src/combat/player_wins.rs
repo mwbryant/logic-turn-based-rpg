@@ -9,7 +9,7 @@ impl Plugin for PlayerWinsPlugin {
                 .in_set(OnUpdate(CombatState::PlayerWins))
                 .in_set(OnUpdate(GameState::Combat)),
         )
-        .add_system(update_fadeout.in_set(OnUpdate(CombatState::PlayerWins)))
+        .add_system(update_fadeout)
         .register_type::<Fadeout>()
         .add_system(test_combat_end);
     }
@@ -24,13 +24,20 @@ pub enum FadeoutState {
 
 #[derive(Component, Reflect)]
 pub struct Fadeout {
-    timer: Timer,
+    in_timer: Timer,
+    hold_timer: Timer,
+    out_timer: Timer,
     state: FadeoutState,
 }
 
-fn test_combat_end(mut combat_state: ResMut<NextState<CombatState>>, input: Res<Input<KeyCode>>) {
+fn test_combat_end(
+    mut combat_state: ResMut<NextState<CombatState>>,
+    input: Res<Input<KeyCode>>,
+    mut overworld_state: ResMut<NextState<OverworldState>>,
+) {
     if input.just_pressed(KeyCode::P) {
         combat_state.set(CombatState::PlayerWins);
+        overworld_state.set(OverworldState::FreeRoam);
     }
 }
 
@@ -58,7 +65,9 @@ fn spawn_fadeout(
                 ..default()
             },
             Fadeout {
-                timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+                in_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+                hold_timer: Timer::from_seconds(0.4, TimerMode::Repeating),
+                out_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
                 state: FadeoutState::FadingIn,
             },
             Name::new("Fadeout"),
@@ -72,31 +81,35 @@ fn update_fadeout(
     mut fadeout: Query<(Entity, &mut BackgroundColor, &mut Fadeout)>,
     time: Res<Time>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut overworld_state: ResMut<NextState<OverworldState>>,
 ) {
     if let Ok((entity, mut color, mut fadeout)) = fadeout.get_single_mut() {
-        fadeout.timer.tick(time.delta());
         match fadeout.state {
             FadeoutState::FadingIn => {
-                if fadeout.timer.just_finished() {
+                fadeout.in_timer.tick(time.delta());
+                if fadeout.in_timer.just_finished() {
                     next_state.set(GameState::Overworld);
+                    overworld_state.set(OverworldState::FreeRoam);
                     fadeout.state = FadeoutState::Hold;
                     color.0.set_a(1.0);
                 } else {
-                    color.0.set_a(fadeout.timer.percent());
+                    color.0.set_a(fadeout.in_timer.percent());
                 }
             }
             FadeoutState::Hold => {
                 color.0.set_a(1.0);
-                if fadeout.timer.just_finished() {
+                fadeout.hold_timer.tick(time.delta());
+                if fadeout.hold_timer.just_finished() {
                     fadeout.state = FadeoutState::FadingOut;
                 }
             }
             FadeoutState::FadingOut => {
-                if fadeout.timer.just_finished() {
+                fadeout.out_timer.tick(time.delta());
+                if fadeout.out_timer.just_finished() {
                     commands.entity(entity).despawn_recursive();
                     color.0.set_a(0.0);
                 } else {
-                    color.0.set_a(fadeout.timer.percent_left());
+                    color.0.set_a(fadeout.out_timer.percent_left());
                 }
             }
         }
