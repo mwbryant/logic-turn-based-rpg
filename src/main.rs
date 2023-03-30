@@ -46,7 +46,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn(camera);
 
     commands.spawn((
-        CharacterBundle::new(Vec2::new(-3.0, 0.0), Character::Knight),
+        CharacterBundle::new(Vec3::new(-3.0, 0.0, CHARACTER_Z), Character::Knight),
         PlayerCombat::default(),
         comp_from_config!(PlayerOverworld, "config/player_overworld.ron"),
         CombatStats {

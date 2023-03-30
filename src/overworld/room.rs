@@ -45,7 +45,7 @@ fn spawn_room(
 ) {
     for (id, config, position) in room.enemies.iter() {
         let enemy = comp_from_config!(EnemyOverworld, config);
-        let mut character = CharacterBundle::new(position.truncate(), Character::GreenBase);
+        let mut character = CharacterBundle::new(*position, Character::GreenBase);
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
 
         commands.spawn((enemy, character, Name::new("Enemy"), EnemyId(*id)));

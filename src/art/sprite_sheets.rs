@@ -182,13 +182,13 @@ impl Default for PlanetBundle {
 }
 
 impl CharacterBundle {
-    pub fn new(position: Vec2, character: Character) -> Self {
+    pub fn new(position: Vec3, character: Character) -> Self {
         let mut bundle = CharacterBundle {
             character,
             ..default()
         };
 
-        bundle.sprite_sheet.transform.translation = position.extend(CHARACTER_Z);
+        bundle.sprite_sheet.transform.translation = position;
 
         bundle
     }

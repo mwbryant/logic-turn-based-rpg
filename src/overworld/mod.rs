@@ -1,4 +1,5 @@
 mod enemy;
+mod npc;
 mod player;
 mod room;
 mod start_combat;
@@ -8,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::prelude::*;
 
 use self::{
-    enemy::EnemyPlugin, player::PlayerPlugin, room::RoomPlugin,
+    enemy::EnemyPlugin, npc::NpcPlugin, player::PlayerPlugin, room::RoomPlugin,
     start_combat::CombatTransitionPlugin,
 };
 
@@ -26,6 +27,7 @@ impl Plugin for OverWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<OverworldState>()
             .add_plugin(PlayerPlugin)
+            .add_plugin(NpcPlugin)
             .add_plugin(CombatTransitionPlugin)
             .add_plugin(RoomPlugin)
             .add_plugin(EnemyPlugin);

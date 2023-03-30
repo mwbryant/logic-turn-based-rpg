@@ -40,7 +40,7 @@ fn start_combat(
                 3 => 4.2,
                 _ => unreachable!("bad slot"),
             };
-            let character = CharacterBundle::new(Vec2::new(x, 0.0), character.clone());
+            let character = CharacterBundle::new(Vec3::new(x, 0.0, ENEMY_Z), character.clone());
             commands.spawn((character, *enemy, *stats, Name::new("Enemy"), CombatEntity));
         }
 
