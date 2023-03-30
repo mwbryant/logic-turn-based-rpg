@@ -18,7 +18,7 @@ fn main() {
                     primary_window: Some(Window {
                         title: "Logic Game".into(),
                         resolution: (WIDTH, HEIGHT).into(),
-                        resizable: false,
+                        resizable: true,
                         ..default()
                     }),
                     ..default()
