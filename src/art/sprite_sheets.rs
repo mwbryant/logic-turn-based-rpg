@@ -112,7 +112,10 @@ fn setup_spritesheet_maps(
         (Character::Knight, CHARACTER_SHEET_WIDTH * 11 + 1),
     ]);
 
-    let icons = HashMap::from([(Icon::Pointer, ICON_SHEET_WIDTH * 17)]);
+    let icons = HashMap::from([
+        (Icon::Pointer, ICON_SHEET_WIDTH * 17),
+        (Icon::KeyE, 19 + ICON_SHEET_WIDTH * 10),
+    ]);
 
     let planets = HashMap::from([(Planet::Fireball, 0)]);
 

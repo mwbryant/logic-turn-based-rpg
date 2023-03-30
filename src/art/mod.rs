@@ -144,6 +144,7 @@ pub const ICON_SHEET_WIDTH: usize = 34;
 pub enum Icon {
     #[default]
     Pointer,
+    KeyE,
 }
 
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect, Serialize, Deserialize)]

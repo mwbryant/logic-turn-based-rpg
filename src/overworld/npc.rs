@@ -1,3 +1,5 @@
+use bevy_easings::Lerp;
+
 use crate::prelude::*;
 
 pub struct NpcPlugin;
@@ -5,43 +7,112 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_test_npc.in_schedule(OnEnter(GameState::Overworld)))
-            .add_system(update_test_npc)
-            .add_system(player_interaction);
+            .add_system(update_dialog_box.in_base_set(CoreSet::PostUpdate))
+            .add_system(close_dialog.in_set(OnUpdate(OverworldState::Dialog)))
+            .add_system(update_npc_icon.in_base_set(CoreSet::PostUpdate))
+            .add_system(player_interaction.in_set(OnUpdate(OverworldState::FreeRoam)));
     }
 }
-
-#[derive(Component)]
-pub struct Npc;
 
 #[derive(Component)]
 pub struct NpcText;
 
-fn update_test_npc(
-    mut text: Query<&mut Style, With<NpcText>>,
-    camera: Query<(&Camera, &GlobalTransform)>,
-) {
-    let (camera, transform) = camera.single();
+#[derive(Component)]
+pub struct DialogUI;
+
+fn update_dialog_box(mut text: Query<&mut Style, With<NpcText>>, camera: Query<&Camera>) {
+    let camera = camera.single();
     let screen_width = camera.logical_viewport_size().unwrap().x;
+
     for mut text in &mut text {
-        text.max_size.width = Val::Px(screen_width * 0.75);
+        //AHHHHH why must this be Px not percent :(
+        //https://github.com/bevyengine/bevy/issues/1490
+        text.max_size.width = Val::Px(screen_width * 0.8 - 30.);
     }
 }
 
-fn spawn_test_npc(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
+fn spawn_test_npc(mut commands: Commands) {
+    let icon = commands
+        .spawn((
+            IconBundle::new(Vec2::new(0.0, 1.0), Icon::KeyE, Vec2::splat(0.7)),
+            InteractIcon,
+            Name::new("Npc Interact Icon"),
+        ))
+        .id();
 
-    camera: Query<(&Camera, &GlobalTransform)>,
+    commands
+        .spawn((
+            CharacterBundle::new(Vec3::new(-3.0, 3.0, NPC_Z), Character::WomanOld),
+            Npc,
+            Name::new("TestNPC"),
+            OverworldEntity,
+        ))
+        .add_child(icon);
+}
+
+fn update_npc_icon(
+    npcs: Query<(&Children, &Transform), With<Npc>>,
+    player: Query<&Transform, (With<PlayerOverworld>, Without<Npc>)>,
+    mut icons: Query<&mut TextureAtlasSprite, With<InteractIcon>>,
 ) {
-    let (camera, transform) = camera.single();
-    let screen_width = camera.logical_viewport_size().unwrap().x;
+    let player = player.single();
+    for (children, npc) in &npcs {
+        let distance = Vec2::distance(player.translation.truncate(), npc.translation.truncate());
+        for child in children {
+            if let Ok(mut sprite) = icons.get_mut(*child) {
+                let x_intercept = 2.5;
+                let lerp_range = 1.0;
+                let lerp_value = -(distance - x_intercept) / lerp_range;
+                let alpha = Lerp::lerp(&0.0, &1.0, &lerp_value);
+                sprite.color.set_a(alpha);
+            }
+        }
+    }
+}
+
+fn player_interaction(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    npcs: Query<&Transform, With<Npc>>,
+    player: Query<&Transform, (With<PlayerOverworld>, Without<Npc>)>,
+    input: Res<Input<KeyCode>>,
+    mut overworld_state: ResMut<NextState<OverworldState>>,
+) {
+    let player = player.single();
+    if !input.just_pressed(KeyCode::E) {
+        return;
+    }
+    for npc in &npcs {
+        if Vec2::distance(player.translation.truncate(), npc.translation.truncate()) < 1.5 {
+            overworld_state.set(OverworldState::Dialog);
+            spawn_dialog_box(&mut commands, &assets, "Hello I am an NPC and this is my test text it should be pretty long and might even span multiple lines on some screen sizes"
+            );
+        }
+    }
+}
+
+fn close_dialog(
+    mut commands: Commands,
+    mut overworld_state: ResMut<NextState<OverworldState>>,
+    input: Res<Input<KeyCode>>,
+    dialog: Query<Entity, With<DialogUI>>,
+) {
+    if input.just_pressed(KeyCode::E) {
+        for dialog in &dialog {
+            commands.entity(dialog).despawn_recursive();
+            overworld_state.set(OverworldState::FreeRoam);
+        }
+    }
+}
+
+fn spawn_dialog_box(
+    commands: &mut Commands,
+    assets: &Res<AssetServer>,
+    starting_text: &str,
+) -> Entity {
     //FIXME: Global font setting
-    let font = asset_server.load("fonts/pointfree.ttf");
-    commands.spawn((
-        CharacterBundle::new(Vec3::new(-3.0, 3.0, NPC_Z), Character::WomanOld),
-        Npc,
-        Name::new("TestNPC"),
-    ));
+    let font = assets.load("fonts/pointfree.ttf");
+
     let parent_node = (
         NodeBundle {
             style: Style {
@@ -52,17 +123,20 @@ fn spawn_test_npc(
                 flex_direction: FlexDirection::Row,
                 position_type: PositionType::Absolute,
                 position: UiRect::left(Val::Percent(10.0)),
+                margin: UiRect::bottom(Val::Percent(4.0)),
                 padding: UiRect::top(Val::Px(15.0)),
                 ..default()
             },
             background_color: BackgroundColor(Color::WHITE),
             ..default()
         },
+        DialogUI,
         Name::new("Dialog UI"),
     );
-    let mut dialog_text = (
+
+    let dialog_text = (
         TextBundle::from_section(
-            "Hello I am an NPC and this is my test text it should be pretty long and might even span multiple lines on some screen sizes",
+            starting_text,
             TextStyle {
                 font,
                 font_size: 36.0,
@@ -70,29 +144,13 @@ fn spawn_test_npc(
             },
         )
         .with_text_alignment(TextAlignment::Left),
-        NpcText
+        NpcText,
     );
-    //AHHHHH why must this be Px not percent :(
-    //https://github.com/bevyengine/bevy/issues/1490
-    dialog_text.0.style.max_size.width = Val::Px(screen_width * 0.75);
 
-    commands.spawn(parent_node).with_children(|commands| {
-        commands.spawn(dialog_text);
-    });
-}
-
-fn player_interaction(
-    npcs: Query<&Transform, With<Npc>>,
-    player: Query<&Transform, (With<PlayerOverworld>, Without<Npc>)>,
-    input: Res<Input<KeyCode>>,
-) {
-    let player = player.single();
-    if !input.just_pressed(KeyCode::E) {
-        return;
-    }
-    for npc in &npcs {
-        if Vec2::distance(player.translation.truncate(), npc.translation.truncate()) < 1.0 {
-            info!("Player chat");
-        }
-    }
+    commands
+        .spawn(parent_node)
+        .with_children(|commands| {
+            commands.spawn(dialog_text);
+        })
+        .id()
 }

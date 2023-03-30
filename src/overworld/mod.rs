@@ -18,6 +18,7 @@ pub enum OverworldState {
     #[default]
     FreeRoam,
     CombatStarting,
+    Dialog,
     NotInOverworld,
 }
 
@@ -34,6 +35,9 @@ impl Plugin for OverWorldPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct Npc;
+
 #[derive(Component, Deserialize)]
 pub struct PlayerOverworld {
     pub movement_speed: f32,
@@ -44,6 +48,9 @@ pub struct OverworldEntity;
 
 #[derive(Component)]
 pub struct CombatFadeout;
+
+#[derive(Component)]
+pub struct InteractIcon;
 
 #[derive(Component, Serialize, Deserialize)]
 pub struct EnemyOverworld {
@@ -72,4 +79,5 @@ pub struct CurrentRoom {
     pub current_player_translation: Vec3,
     pub background_image: String,
     pub enemies: Vec<(usize, String, Vec3)>,
+    //pub npcs: Vec<(String, Vec3)>,
 }
