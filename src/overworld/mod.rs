@@ -36,7 +36,7 @@ impl Plugin for OverWorldPlugin {
 }
 
 #[derive(Component)]
-pub struct Npc;
+pub struct Npc(pub usize);
 
 #[derive(Component, Deserialize)]
 pub struct PlayerOverworld {
@@ -61,7 +61,6 @@ pub struct EnemyOverworld {
     new_direction_timer: Timer,
     pub wander_range: f32,
     pub follow_range: f32,
-    // TODO
     pub combat_ref: String,
 }
 

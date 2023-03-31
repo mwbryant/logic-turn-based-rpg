@@ -22,6 +22,7 @@ pub struct DialogUI;
 
 fn update_dialog_box(mut text: Query<&mut Style, With<NpcText>>, camera: Query<&Camera>) {
     let camera = camera.single();
+
     let screen_width = camera.logical_viewport_size().unwrap().x;
 
     for mut text in &mut text {
@@ -43,7 +44,24 @@ fn spawn_test_npc(mut commands: Commands) {
     commands
         .spawn((
             CharacterBundle::new(Vec3::new(-3.0, 3.0, NPC_Z), Character::WomanOld),
-            Npc,
+            Npc(1),
+            Name::new("TestNPC"),
+            OverworldEntity,
+        ))
+        .add_child(icon);
+
+    let icon = commands
+        .spawn((
+            IconBundle::new(Vec2::new(0.0, 1.0), Icon::KeyE, Vec2::splat(0.7)),
+            InteractIcon,
+            Name::new("Npc Interact Icon"),
+        ))
+        .id();
+
+    commands
+        .spawn((
+            CharacterBundle::new(Vec3::new(-0.0, 3.0, NPC_Z), Character::ManOld),
+            Npc(2),
             Name::new("TestNPC"),
             OverworldEntity,
         ))
@@ -64,6 +82,7 @@ fn update_npc_icon(
                 let lerp_range = 1.0;
                 let lerp_value = -(distance - x_intercept) / lerp_range;
                 let alpha = Lerp::lerp(&0.0, &1.0, &lerp_value);
+
                 sprite.color.set_a(alpha);
             }
         }
@@ -73,20 +92,33 @@ fn update_npc_icon(
 fn player_interaction(
     mut commands: Commands,
     assets: Res<AssetServer>,
-    npcs: Query<&Transform, With<Npc>>,
+    npcs: Query<(&Transform, &Npc)>,
     player: Query<&Transform, (With<PlayerOverworld>, Without<Npc>)>,
     input: Res<Input<KeyCode>>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
 ) {
     let player = player.single();
+
     if !input.just_pressed(KeyCode::E) {
         return;
     }
-    for npc in &npcs {
+
+    for (npc, id) in &npcs {
         if Vec2::distance(player.translation.truncate(), npc.translation.truncate()) < 1.5 {
             overworld_state.set(OverworldState::Dialog);
-            spawn_dialog_box(&mut commands, &assets, "Hello I am an NPC and this is my test text it should be pretty long and might even span multiple lines on some screen sizes"
-            );
+            //TEMP
+            if id.0 == 1 {
+                spawn_dialog_box(
+                    &mut commands,
+                    &assets,
+                    "Hello I am an NPC and this is my test text it should be pretty long and might even span multiple lines on some screen sizes");
+            } else {
+                spawn_dialog_box(
+                    &mut commands,
+                    &assets,
+                    "I am another NPC who can say something else!",
+                );
+            }
         }
     }
 }
@@ -119,12 +151,12 @@ fn spawn_dialog_box(
                 size: Size::new(Val::Percent(80.0), Val::Percent(30.0)),
                 align_self: AlignSelf::FlexEnd,
                 align_items: AlignItems::FlexStart,
-                justify_content: JustifyContent::Center,
+                justify_content: JustifyContent::FlexStart,
                 flex_direction: FlexDirection::Row,
                 position_type: PositionType::Absolute,
                 position: UiRect::left(Val::Percent(10.0)),
                 margin: UiRect::bottom(Val::Percent(4.0)),
-                padding: UiRect::top(Val::Px(15.0)),
+                padding: UiRect::new(Val::Percent(1.0), Val::Auto, Val::Px(15.0), Val::Auto),
                 ..default()
             },
             background_color: BackgroundColor(Color::WHITE),

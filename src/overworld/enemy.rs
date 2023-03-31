@@ -25,6 +25,7 @@ fn enemy_start_combat(
     mut overworld_state: ResMut<NextState<OverworldState>>,
 ) {
     let transform = player.get_single().expect("Only 1 Player");
+
     for (enemy_transform, enemy, id) in &enemies {
         if Vec2::distance(
             transform.translation.truncate(),
@@ -33,8 +34,10 @@ fn enemy_start_combat(
         {
             commands.spawn(comp_from_config!(CombatDescriptor, &enemy.combat_ref));
             overworld_state.set(OverworldState::CombatStarting);
+
             let fadeout = spawn_fadeout(&mut commands);
             commands.entity(fadeout).insert(CombatFadeout);
+
             room.enemies.retain(|(room_id, _, _)| *room_id != id.0);
             return;
         }
