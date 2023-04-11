@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use rand::Rng;
 
-use crate::{comp_from_config, prelude::*};
+use crate::prelude::*;
 
 pub struct EnemyPlugin;
 
@@ -23,6 +23,7 @@ fn enemy_start_combat(
     //TODO shouldn't remove from room if player runs from battle
     mut room: ResMut<CurrentRoom>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
+    assets: Res<AssetServer>,
 ) {
     let transform = player.get_single().expect("Only 1 Player");
 
@@ -32,7 +33,8 @@ fn enemy_start_combat(
             enemy_transform.translation.truncate(),
         ) < 0.5
         {
-            commands.spawn(comp_from_config!(CombatDescriptor, &enemy.combat_ref));
+            let combat: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
+            commands.spawn(combat);
             overworld_state.set(OverworldState::CombatStarting);
 
             let fadeout = spawn_fadeout(&mut commands);

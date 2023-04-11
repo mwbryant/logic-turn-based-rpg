@@ -9,7 +9,9 @@ pub mod prelude {
     pub use crate::combat::*;
     pub use crate::overworld::*;
     pub use crate::utils::*;
+    pub use bevy::reflect::TypeUuid;
     pub use bevy::{prelude::*, utils::HashMap};
+    pub use bevy_common_assets::ron::RonAssetPlugin;
     pub use bevy_rapier2d::prelude::*;
 
     pub const BACKGROUND_Z: f32 = 10.0;

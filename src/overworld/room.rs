@@ -1,24 +1,36 @@
-use crate::{comp_from_config, prelude::*};
+use crate::prelude::*;
 
 pub struct RoomPlugin;
 
 impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(load_starting_room)
-            .add_system(spawn_room.in_schedule(OnEnter(GameState::Overworld)))
+            .add_system(spawn_starting_room.in_schedule(OnEnter(GameState::Overworld)))
+            //.add_system(spawn_room.in_schedule(OnEnter(GameState::Overworld)))
             .add_system(update_player_translation_in_room.in_set(OnUpdate(GameState::Overworld)));
     }
 }
 
-fn load_starting_room(mut commands: Commands) {
-    //TODO pull from room file
-    let enemies = ["config/basic_enemy.ron", "config/basic_enemy2.ron"];
+#[derive(Resource)]
+pub struct RoomDescriptor {
+    enemies: Vec<Handle<EnemyOverworld>>,
+}
+
+fn spawn_starting_room(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    room: Res<RoomDescriptor>,
+    enemies: Res<Assets<EnemyOverworld>>,
+) {
     let mut enemy_setup = Vec::new();
 
-    for (id, config) in enemies.iter().enumerate() {
-        //FIXME windows uses \ .. fix in macro
-        let enemy = comp_from_config!(EnemyOverworld, config);
-        enemy_setup.push((id, config.to_string(), enemy.home.extend(ENEMY_Z)));
+    for (id, config) in room.enemies.iter().enumerate() {
+        if let Some(enemy) = enemies.get(config) {
+            enemy_setup.push((id, enemy.clone(), enemy.home.extend(ENEMY_Z)));
+        } else {
+            // give up and try next frame if any enemy isn't loaded
+            return;
+        }
     }
 
     let room = CurrentRoom {
@@ -26,7 +38,25 @@ fn load_starting_room(mut commands: Commands) {
         background_image: "Background_Mockup.png".to_string(),
         enemies: enemy_setup,
     };
+
     commands.insert_resource(room);
+    info!("Room loaded!");
+}
+
+fn load_starting_room(mut commands: Commands, assets: Res<AssetServer>) {
+    //TODO pull from room file
+    let files = [
+        "config/basic_enemy.enemy.ron",
+        "config/basic_enemy2.enemy.ron",
+    ];
+
+    let mut enemies = Vec::new();
+    for (_id, config) in files.iter().enumerate() {
+        let enemy: Handle<EnemyOverworld> = assets.load(*config);
+        enemies.push(enemy);
+    }
+
+    commands.insert_resource(RoomDescriptor { enemies });
 }
 
 fn update_player_translation_in_room(
@@ -43,12 +73,12 @@ fn spawn_room(
     room: Res<CurrentRoom>,
     mut player: Query<&mut Transform, With<PlayerOverworld>>,
 ) {
-    for (id, config, position) in room.enemies.iter() {
-        let enemy = comp_from_config!(EnemyOverworld, config);
+    for (id, enemy, position) in room.enemies.iter() {
+        //let enemy: Handle<CombatDescriptor> = assets.load(config);
         let mut character = CharacterBundle::new(*position, Character::GreenBase);
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
 
-        commands.spawn((enemy, character, Name::new("Enemy"), EnemyId(*id)));
+        commands.spawn((enemy.clone(), character, Name::new("Enemy"), EnemyId(*id)));
     }
 
     commands.spawn((

@@ -41,6 +41,7 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<CombatState>()
+            .add_plugin(RonAssetPlugin::<CombatDescriptor>::new(&["combat.ron"]))
             .add_event::<HitEvent>()
             .add_event::<DeathEvent>()
             .add_plugin(TurnBasedPlugin)
