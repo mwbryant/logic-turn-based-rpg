@@ -29,6 +29,7 @@ fn spawn_starting_room(
             enemy_setup.push((id, enemy.clone(), enemy.home.extend(ENEMY_Z)));
         } else {
             // give up and try next frame if any enemy isn't loaded
+            info!("Room failed!");
             return;
         }
     }

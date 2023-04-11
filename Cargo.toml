@@ -9,8 +9,35 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[features]
+dev = [
+    "bevy/bevy_dylib",
+]
+
+default = [
+    "bevy/animation",
+    "bevy/bevy_asset",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_pbr",
+    "bevy/serialize",
+    "bevy/bevy_gltf",
+    "bevy/bevy_render",
+    "bevy/bevy_sprite",
+    "bevy/bevy_text",
+    "bevy/bevy_ui",
+    "bevy/png",
+    "bevy/hdr",
+    "bevy/zstd",
+    "bevy/x11",
+    "bevy/ktx2",
+    "bevy/filesystem_watcher",
+    "bevy/tonemapping_luts"
+]
+
 [dependencies]
-bevy = {version = "0.10", features = ["dynamic_linking", "serialize"] }
+bevy = { version = "0.10", default-features = false }
 bevy_common_assets = { version = "0.6", features = ["ron"] }
 bevy_rapier2d = "0.21"
 bevy-inspector-egui = { version = "0.18.0", default-features = false, features = ["bevy_pbr"] }

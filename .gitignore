@@ -1,2 +1,4 @@
 /target
 .vscode
+wasm/bevy_game*
+wasm/assets
