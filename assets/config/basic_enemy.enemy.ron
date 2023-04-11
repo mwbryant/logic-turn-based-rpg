@@ -12,7 +12,7 @@ EnemyOverworld(
     ),
     wander_range: 1.5,
     follow_range: 1.0,
-    combat_ref: "config/basic_combat.ron"
+    combat_ref: "config/basic_combat.combat.ron"
 )
 
 

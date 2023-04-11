@@ -10,27 +10,35 @@ impl Plugin for CombatTransitionPlugin {
 
 fn start_combat(
     mut commands: Commands,
-    fadeout: Query<&Fadeout, With<CombatFadeout>>,
-    combat_descriptor: Query<(Entity, &CombatDescriptor)>,
+    fadeout: Query<(&Fadeout, &CombatFadeout)>,
+    combat_descriptor: Query<(Entity, &Handle<CombatDescriptor>)>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
     mut main_game_state: ResMut<NextState<GameState>>,
     // TODO combat state for starting
     mut combat_state: ResMut<NextState<CombatState>>,
+    combats: Res<Assets<CombatDescriptor>>,
     assets: Res<AssetServer>,
 ) {
-    assert!(combat_descriptor.iter().count() <= 1);
-    if let Ok(fadeout) = fadeout.get_single() {
+    //assert!(combat_descriptor.iter().count() <= 1);
+    if let Ok((fadeout, _)) = fadeout.get_single() {
         if !fadeout.fade_in_just_finished {
             return;
         }
         info!("Starting Combat");
     } else {
         warn!("No fadeout for entering combat!");
+        return;
     }
 
-    for (entity, combat_desc) in &combat_descriptor {
-        commands.entity(entity).despawn_recursive();
-        info!("Starting combat");
+    let (_, combat) = fadeout.single();
+    if let Ok((entity, combat_desc)) = &combat_descriptor.get(combat.0) {
+        commands.entity(*entity).despawn_recursive();
+        // FIXME this is a kinda unsound assumption...
+        let combat_desc = combats
+            .get(combat_desc)
+            .expect("Combat should have loaded by end of fade...");
+
+        info!("Spawning enemies");
         for (enemy, stats, character) in combat_desc.enemies.iter() {
             let x = match enemy.slot {
                 0 => 0.6,
@@ -74,5 +82,7 @@ fn start_combat(
         overworld_state.set(OverworldState::NotInOverworld);
         main_game_state.set(GameState::Combat);
         combat_state.set(CombatState::PlayerSelecting);
+    } else {
+        error!("No Combat Descriptor!");
     }
 }

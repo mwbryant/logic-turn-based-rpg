@@ -5,9 +5,22 @@ pub struct RoomPlugin;
 impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(load_starting_room)
-            .add_system(spawn_starting_room.in_schedule(OnEnter(GameState::Overworld)))
-            //.add_system(spawn_room.in_schedule(OnEnter(GameState::Overworld)))
-            .add_system(update_player_translation_in_room.in_set(OnUpdate(GameState::Overworld)));
+            .add_system(
+                spawn_starting_room
+                    .in_set(OnUpdate(OverworldState::LoadingRoom))
+                    .run_if(not(resource_exists::<CurrentRoom>())),
+            )
+            .add_system(
+                restore_room
+                    .in_set(OnUpdate(OverworldState::LoadingRoom))
+                    .run_if(resource_exists::<CurrentRoom>()),
+            )
+            .add_system(spawn_room.in_schedule(OnExit(OverworldState::LoadingRoom)))
+            .add_system(
+                update_player_translation_in_room
+                    .in_set(OnUpdate(GameState::Overworld))
+                    .in_set(OnUpdate(OverworldState::FreeRoam)),
+            );
     }
 }
 
@@ -16,11 +29,16 @@ pub struct RoomDescriptor {
     enemies: Vec<Handle<EnemyOverworld>>,
 }
 
+fn restore_room(mut next_state: ResMut<NextState<OverworldState>>) {
+    info!("Room loaded!");
+    next_state.set(OverworldState::FreeRoam);
+}
+
 fn spawn_starting_room(
     mut commands: Commands,
-    assets: Res<AssetServer>,
     room: Res<RoomDescriptor>,
     enemies: Res<Assets<EnemyOverworld>>,
+    mut next_state: ResMut<NextState<OverworldState>>,
 ) {
     let mut enemy_setup = Vec::new();
 
@@ -41,7 +59,9 @@ fn spawn_starting_room(
     };
 
     commands.insert_resource(room);
+
     info!("Room loaded!");
+    next_state.set(OverworldState::FreeRoam);
 }
 
 fn load_starting_room(mut commands: Commands, assets: Res<AssetServer>) {
@@ -75,11 +95,17 @@ fn spawn_room(
     mut player: Query<&mut Transform, With<PlayerOverworld>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
-        //let enemy: Handle<CombatDescriptor> = assets.load(config);
+        let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
         let mut character = CharacterBundle::new(*position, Character::GreenBase);
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
 
-        commands.spawn((enemy.clone(), character, Name::new("Enemy"), EnemyId(*id)));
+        commands.spawn((
+            enemy.clone(),
+            descriptor,
+            character,
+            Name::new("Enemy"),
+            EnemyId(*id),
+        ));
     }
 
     commands.spawn((

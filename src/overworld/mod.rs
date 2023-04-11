@@ -17,6 +17,7 @@ use self::{
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
 pub enum OverworldState {
     #[default]
+    LoadingRoom,
     FreeRoam,
     CombatStarting,
     Dialog,
@@ -52,7 +53,7 @@ pub struct PlayerOverworld {
 pub struct OverworldEntity;
 
 #[derive(Component)]
-pub struct CombatFadeout;
+pub struct CombatFadeout(pub Entity);
 
 #[derive(Component)]
 pub struct InteractIcon;
