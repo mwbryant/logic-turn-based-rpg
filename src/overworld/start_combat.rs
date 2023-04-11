@@ -8,7 +8,6 @@ impl Plugin for CombatTransitionPlugin {
     }
 }
 
-//FIXME move this logic to combat
 fn start_combat(
     mut commands: Commands,
     fadeout: Query<&Fadeout, With<CombatFadeout>>,

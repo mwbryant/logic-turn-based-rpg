@@ -1,4 +1,5 @@
 mod enemy;
+mod map;
 mod npc;
 mod player;
 mod room;
@@ -9,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::prelude::*;
 
 use self::{
-    enemy::EnemyPlugin, npc::NpcPlugin, player::PlayerPlugin, room::RoomPlugin,
+    enemy::EnemyPlugin, map::MapPlugin, npc::NpcPlugin, player::PlayerPlugin, room::RoomPlugin,
     start_combat::CombatTransitionPlugin,
 };
 
@@ -30,6 +31,7 @@ impl Plugin for OverWorldPlugin {
             .add_plugin(PlayerPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(CombatTransitionPlugin)
+            .add_plugin(MapPlugin)
             .add_plugin(RoomPlugin)
             .add_plugin(EnemyPlugin);
     }

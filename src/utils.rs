@@ -24,6 +24,8 @@ pub fn despawn_with<T: Component>(mut commands: Commands, matches: Query<Entity,
     }
 }
 
+#[cfg(target_os = "linux")]
+//#[cfg(not(target_os = "linux"))]
 //FIXME windows uses \ .. fix in macro
 #[macro_export]
 macro_rules! comp_from_config {

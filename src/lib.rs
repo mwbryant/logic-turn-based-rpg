@@ -10,6 +10,7 @@ pub mod prelude {
     pub use crate::overworld::*;
     pub use crate::utils::*;
     pub use bevy::{prelude::*, utils::HashMap};
+    pub use bevy_rapier2d::prelude::*;
 
     pub const BACKGROUND_Z: f32 = 10.0;
     pub const ENEMY_Z: f32 = 90.0;
