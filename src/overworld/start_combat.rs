@@ -8,18 +8,19 @@ impl Plugin for CombatTransitionPlugin {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn start_combat(
     mut commands: Commands,
     fadeout: Query<(&Fadeout, &CombatFadeout)>,
     combat_descriptor: Query<(Entity, &Handle<CombatDescriptor>)>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
     mut main_game_state: ResMut<NextState<GameState>>,
-    // TODO combat state for starting
     mut combat_state: ResMut<NextState<CombatState>>,
     combats: Res<Assets<CombatDescriptor>>,
     assets: Res<AssetServer>,
 ) {
-    //assert!(combat_descriptor.iter().count() <= 1);
+    //Check that fade completes
+    assert!(combat_descriptor.iter().count() <= 1);
     if let Ok((fadeout, _)) = fadeout.get_single() {
         if !fadeout.fade_in_just_finished {
             return;
@@ -30,6 +31,7 @@ fn start_combat(
         return;
     }
 
+    //Find the enemy that we encountered and get the combat descriptor
     let (_, combat) = fadeout.single();
     if let Ok((entity, combat_desc)) = &combat_descriptor.get(combat.0) {
         commands.entity(*entity).despawn_recursive();
@@ -38,7 +40,7 @@ fn start_combat(
             .get(combat_desc)
             .expect("Combat should have loaded by end of fade...");
 
-        info!("Spawning enemies");
+        // Spawn all the enemies
         for (enemy, stats, character) in combat_desc.enemies.iter() {
             let x = match enemy.slot {
                 0 => 0.6,

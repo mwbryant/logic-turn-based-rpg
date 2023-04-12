@@ -1,23 +1,24 @@
 mod enemy;
-mod map;
 mod npc;
 mod player;
 mod room;
 mod start_combat;
+mod walls;
 
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
 use self::{
-    enemy::EnemyPlugin, map::MapPlugin, npc::NpcPlugin, player::PlayerPlugin, room::RoomPlugin,
-    start_combat::CombatTransitionPlugin,
+    enemy::EnemyPlugin, npc::NpcPlugin, player::PlayerPlugin, room::RoomPlugin,
+    start_combat::CombatTransitionPlugin, walls::MapPlugin,
 };
 
 #[derive(States, PartialEq, Eq, Debug, Default, Clone, Hash)]
 pub enum OverworldState {
     #[default]
     LoadingRoom,
+    RestoreRoom,
     FreeRoam,
     CombatStarting,
     Dialog,

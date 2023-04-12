@@ -50,7 +50,7 @@ fn transition_to_overworld(
     if let Ok(fadeout) = fadeout.get_single() {
         if fadeout.fade_in_just_finished {
             next_state.set(GameState::Overworld);
-            overworld_state.set(OverworldState::LoadingRoom);
+            overworld_state.set(OverworldState::RestoreRoom);
         }
     }
 }
