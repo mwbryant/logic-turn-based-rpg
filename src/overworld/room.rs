@@ -5,17 +5,8 @@ pub struct RoomPlugin;
 impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(load_starting_room)
-            .add_system(
-                spawn_starting_room
-                    .in_set(OnUpdate(OverworldState::LoadingRoom))
-                    .run_if(not(resource_exists::<CurrentRoom>())),
-            )
-            .add_system(
-                restore_room
-                    .in_set(OnUpdate(OverworldState::LoadingRoom))
-                    .run_if(resource_exists::<CurrentRoom>()),
-            )
-            .add_system(spawn_room.in_schedule(OnExit(OverworldState::LoadingRoom)))
+            .add_system(try_spawn_starting_room.in_set(OnUpdate(OverworldState::LoadingRoom)))
+            .add_system(spawn_current_room.in_set(OnUpdate(OverworldState::RestoreRoom)))
             .add_system(
                 update_player_translation_in_room
                     .in_set(OnUpdate(GameState::Overworld))
@@ -29,12 +20,7 @@ pub struct RoomDescriptor {
     enemies: Vec<Handle<EnemyOverworld>>,
 }
 
-fn restore_room(mut next_state: ResMut<NextState<OverworldState>>) {
-    info!("Room loaded!");
-    next_state.set(OverworldState::FreeRoam);
-}
-
-fn spawn_starting_room(
+fn try_spawn_starting_room(
     mut commands: Commands,
     room: Res<RoomDescriptor>,
     enemies: Res<Assets<EnemyOverworld>>,
@@ -61,7 +47,7 @@ fn spawn_starting_room(
     commands.insert_resource(room);
 
     info!("Room loaded!");
-    next_state.set(OverworldState::FreeRoam);
+    next_state.set(OverworldState::RestoreRoom);
 }
 
 fn load_starting_room(mut commands: Commands, assets: Res<AssetServer>) {
@@ -88,11 +74,12 @@ fn update_player_translation_in_room(
     room.current_player_translation = player.translation;
 }
 
-fn spawn_room(
+fn spawn_current_room(
     mut commands: Commands,
     assets: Res<AssetServer>,
     room: Res<CurrentRoom>,
     mut player: Query<&mut Transform, With<PlayerOverworld>>,
+    mut next_state: ResMut<NextState<OverworldState>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
@@ -124,4 +111,6 @@ fn spawn_room(
 
     let mut player = player.single_mut();
     player.translation = room.current_player_translation;
+
+    next_state.set(OverworldState::FreeRoam);
 }
