@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::walls::spawn_hit_box;
+
 pub struct RoomPlugin;
 
 impl Plugin for RoomPlugin {
@@ -41,6 +43,7 @@ fn check_if_room_loaded(
             current_player_translation: Vec3::new(0.0, 0.0, CHARACTER_Z),
             background_image: "Background_Mockup.png".to_string(),
             enemies,
+            walls: room.walls.clone(),
         };
 
         commands.insert_resource(room);
@@ -54,11 +57,7 @@ fn check_if_room_loaded(
 }
 
 fn load_starting_room(mut commands: Commands, assets: Res<AssetServer>) {
-    //TODO pull from room file
-    //let files = [
-    //"config/basic_enemy.enemy.ron",
-    //"config/basic_enemy2.enemy.ron",
-    //];
+    //Uncomment to get ron file errors...
     //ron::from_str::<RoomDescriptor>(&include_str!("../../assets/config/sample_room.room.ron"))
     //.expect("Failled to load");
 
@@ -81,10 +80,6 @@ fn spawn_current_room(
     mut next_state: ResMut<NextState<OverworldState>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
-        ron::from_str::<CombatDescriptor>(
-            &std::fs::read_to_string("assets/".to_owned() + &enemy.combat_ref.to_owned()).unwrap(),
-        )
-        .expect("Failled to load");
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
         let mut character = CharacterBundle::new(*position, Character::GreenBase);
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
@@ -96,6 +91,10 @@ fn spawn_current_room(
             Name::new("Enemy"),
             EnemyId(*id),
         ));
+    }
+
+    for hitbox in room.walls.iter() {
+        spawn_hit_box(&mut commands, hitbox.size, hitbox.position);
     }
 
     commands.spawn((

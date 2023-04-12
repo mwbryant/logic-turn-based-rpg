@@ -23,22 +23,23 @@ fn camera_follow(
 }
 
 fn player_movement(
-    mut player: Query<(&mut Transform, &PlayerOverworld)>,
+    mut player: Query<(&PlayerOverworld, &mut KinematicCharacterController)>,
     input: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let (mut transform, player) = player.get_single_mut().expect("1 Player");
-
+    let (player, mut controller) = player.get_single_mut().expect("1 Player");
+    let mut target_movement = Vec2::ZERO;
     if input.pressed(KeyCode::W) {
-        transform.translation.y += player.movement_speed * time.delta_seconds();
+        target_movement.y += player.movement_speed * time.delta_seconds();
     }
     if input.pressed(KeyCode::S) {
-        transform.translation.y -= player.movement_speed * time.delta_seconds();
+        target_movement.y -= player.movement_speed * time.delta_seconds();
     }
     if input.pressed(KeyCode::A) {
-        transform.translation.x -= player.movement_speed * time.delta_seconds();
+        target_movement.x -= player.movement_speed * time.delta_seconds();
     }
     if input.pressed(KeyCode::D) {
-        transform.translation.x += player.movement_speed * time.delta_seconds();
+        target_movement.x += player.movement_speed * time.delta_seconds();
     }
+    controller.translation = Some(target_movement);
 }

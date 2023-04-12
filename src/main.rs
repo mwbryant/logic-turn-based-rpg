@@ -59,6 +59,9 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             attack: 1,
             defense: 0,
         },
+        RigidBody::KinematicPositionBased,
+        Collider::round_cuboid(0.09, 0.11, 0.006),
+        KinematicCharacterController::default(),
         Name::new("Player"),
     ));
 
