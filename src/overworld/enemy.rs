@@ -33,8 +33,9 @@ fn enemy_start_combat(
             enemy_transform.translation.truncate(),
         ) < 0.5
         {
+            info!("Spawning combat");
             let combat: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
-            commands.spawn(combat);
+            commands.spawn((combat, CombatStartTag));
             overworld_state.set(OverworldState::CombatStarting);
 
             let fadeout = spawn_fadeout(&mut commands);

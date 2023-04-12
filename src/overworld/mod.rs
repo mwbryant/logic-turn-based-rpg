@@ -31,6 +31,7 @@ impl Plugin for OverWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<OverworldState>()
             .add_plugin(RonAssetPlugin::<EnemyOverworld>::new(&["enemy.ron"]))
+            .add_plugin(RonAssetPlugin::<RoomDescriptor>::new(&["room.ron"]))
             .add_plugin(RonAssetPlugin::<PlayerOverworld>::new(&["player.ron"]))
             .add_plugin(PlayerPlugin)
             .add_plugin(NpcPlugin)
@@ -43,6 +44,19 @@ impl Plugin for OverWorldPlugin {
 
 #[derive(Component)]
 pub struct Npc(pub usize);
+
+#[derive(Component, Deserialize, TypeUuid)]
+#[uuid = "ab5d5e61-fbb6-403f-a19f-39dbe413a440"]
+pub struct RoomDescriptor {
+    enemies: Vec<String>,
+    walls: Vec<WallHitBox>,
+}
+
+#[derive(Component, Deserialize)]
+pub struct WallHitBox {
+    position: Vec2,
+    size: Vec2,
+}
 
 #[derive(Component, Deserialize, TypeUuid)]
 #[uuid = "b43f4b0e-29de-4069-b462-41f9ed63d845"]
@@ -75,6 +89,9 @@ pub struct EnemyOverworld {
 //For lookup in room
 #[derive(Component, Serialize, Deserialize)]
 pub struct EnemyId(pub usize);
+
+#[derive(Component)]
+pub struct CombatStartTag;
 
 #[derive(Component, Serialize, Deserialize, TypeUuid)]
 #[uuid = "9d0b9466-8797-486e-a930-bcb696f8e2f3"]

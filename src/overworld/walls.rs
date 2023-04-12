@@ -2,15 +2,6 @@ use crate::prelude::*;
 
 pub struct MapPlugin;
 
-pub struct MapDescriptor {
-    walls: Vec<WallHitBox>,
-}
-
-pub struct WallHitBox {
-    position: Vec2,
-    size: Vec2,
-}
-
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_map);

@@ -5,7 +5,7 @@ pub struct RoomPlugin;
 impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(load_starting_room)
-            .add_system(try_spawn_starting_room.in_set(OnUpdate(OverworldState::LoadingRoom)))
+            .add_system(check_if_room_loaded.in_set(OnUpdate(OverworldState::LoadingRoom)))
             .add_system(spawn_current_room.in_set(OnUpdate(OverworldState::RestoreRoom)))
             .add_system(
                 update_player_translation_in_room
@@ -15,55 +15,54 @@ impl Plugin for RoomPlugin {
     }
 }
 
-#[derive(Resource)]
-pub struct RoomDescriptor {
-    enemies: Vec<Handle<EnemyOverworld>>,
-}
-
-fn try_spawn_starting_room(
+fn check_if_room_loaded(
     mut commands: Commands,
-    room: Res<RoomDescriptor>,
-    enemies: Res<Assets<EnemyOverworld>>,
+    assets: Res<AssetServer>,
+    room: Query<(Entity, &Handle<RoomDescriptor>)>,
+    rooms: Res<Assets<RoomDescriptor>>,
+    enemy: Res<Assets<EnemyOverworld>>,
     mut next_state: ResMut<NextState<OverworldState>>,
 ) {
-    let mut enemy_setup = Vec::new();
-
-    for (id, config) in room.enemies.iter().enumerate() {
-        if let Some(enemy) = enemies.get(config) {
-            enemy_setup.push((id, enemy.clone(), enemy.home.extend(ENEMY_Z)));
-        } else {
-            // give up and try next frame if any enemy isn't loaded
-            info!("Room failed!");
-            return;
+    let (entity, room) = room.single();
+    if let Some(room) = rooms.get(room) {
+        let mut enemies = Vec::new();
+        for (id, config) in room.enemies.iter().enumerate() {
+            //Try loading, each frame this call should return the same handle
+            let handle = assets.load(config);
+            if let Some(enemy) = enemy.get(&handle) {
+                enemies.push((id, enemy.clone(), enemy.home.extend(ENEMY_Z)));
+            } else {
+                info!("Waiting on enemy load");
+                return;
+            }
         }
+
+        let room = CurrentRoom {
+            current_player_translation: Vec3::new(0.0, 0.0, CHARACTER_Z),
+            background_image: "Background_Mockup.png".to_string(),
+            enemies,
+        };
+
+        commands.insert_resource(room);
+        commands.entity(entity).despawn();
+
+        info!("Room loaded!");
+        next_state.set(OverworldState::RestoreRoom);
+    } else {
+        info!("Waiting on room load");
     }
-
-    let room = CurrentRoom {
-        current_player_translation: Vec3::new(0.0, 0.0, CHARACTER_Z),
-        background_image: "Background_Mockup.png".to_string(),
-        enemies: enemy_setup,
-    };
-
-    commands.insert_resource(room);
-
-    info!("Room loaded!");
-    next_state.set(OverworldState::RestoreRoom);
 }
 
 fn load_starting_room(mut commands: Commands, assets: Res<AssetServer>) {
     //TODO pull from room file
-    let files = [
-        "config/basic_enemy.enemy.ron",
-        "config/basic_enemy2.enemy.ron",
-    ];
+    //let files = [
+    //"config/basic_enemy.enemy.ron",
+    //"config/basic_enemy2.enemy.ron",
+    //];
+    //ron::from_str::<RoomDescriptor>(&include_str!("../../assets/config/sample_room.room.ron"))
+    //.expect("Failled to load");
 
-    let mut enemies = Vec::new();
-    for (_id, config) in files.iter().enumerate() {
-        let enemy: Handle<EnemyOverworld> = assets.load(*config);
-        enemies.push(enemy);
-    }
-
-    commands.insert_resource(RoomDescriptor { enemies });
+    commands.spawn(assets.load::<RoomDescriptor, _>("config/sample_room.room.ron"));
 }
 
 fn update_player_translation_in_room(
@@ -82,6 +81,10 @@ fn spawn_current_room(
     mut next_state: ResMut<NextState<OverworldState>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
+        ron::from_str::<CombatDescriptor>(
+            &std::fs::read_to_string("assets/".to_owned() + &enemy.combat_ref.to_owned()).unwrap(),
+        )
+        .expect("Failled to load");
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
         let mut character = CharacterBundle::new(*position, Character::GreenBase);
         character.sprite_sheet.transform.translation.z = ENEMY_Z;
