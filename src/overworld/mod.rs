@@ -68,7 +68,7 @@ pub struct PlayerOverworld {
 pub struct OverworldEntity;
 
 #[derive(Component)]
-pub struct CombatFadeout(pub Entity);
+pub struct CombatFadeout;
 
 #[derive(Component)]
 pub struct InteractIcon;

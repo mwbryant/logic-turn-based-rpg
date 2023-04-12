@@ -18,7 +18,7 @@ impl Plugin for EnemyPlugin {
 //TODO Use physics or enemy holds range
 fn enemy_start_combat(
     mut commands: Commands,
-    enemies: Query<(Entity, &Transform, &EnemyOverworld, &EnemyId)>,
+    enemies: Query<(&Transform, &EnemyOverworld, &EnemyId)>,
     player: Query<&Transform, (With<PlayerOverworld>, Without<EnemyOverworld>)>,
     //TODO shouldn't remove from room if player runs from battle
     mut room: ResMut<CurrentRoom>,
@@ -27,7 +27,7 @@ fn enemy_start_combat(
 ) {
     let transform = player.get_single().expect("Only 1 Player");
 
-    for (ent, enemy_transform, enemy, id) in &enemies {
+    for (enemy_transform, enemy, id) in &enemies {
         if Vec2::distance(
             transform.translation.truncate(),
             enemy_transform.translation.truncate(),
@@ -39,7 +39,7 @@ fn enemy_start_combat(
             overworld_state.set(OverworldState::CombatStarting);
 
             let fadeout = spawn_fadeout(&mut commands);
-            commands.entity(fadeout).insert(CombatFadeout(ent));
+            commands.entity(fadeout).insert(CombatFadeout);
 
             room.enemies.retain(|(room_id, _, _)| *room_id != id.0);
             return;

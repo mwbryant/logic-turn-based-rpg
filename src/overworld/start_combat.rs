@@ -31,8 +31,6 @@ fn start_combat(
         return;
     }
 
-    //Find the enemy that we encountered and get the combat descriptor
-    let (_, combat) = fadeout.single();
     let (entity, combat_desc) = &combat_descriptor.single();
     commands.entity(*entity).despawn_recursive();
     // FIXME this is a kinda unsound assumption...
