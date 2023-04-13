@@ -4,24 +4,15 @@ pub struct PlayerWinsPlugin;
 
 impl Plugin for PlayerWinsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            spawn_win_fadeout
-                .in_set(OnUpdate(CombatState::PlayerWins))
-                .in_set(OnUpdate(GameState::Combat)),
-        )
-        .add_system(transition_to_overworld)
-        .add_system(test_combat_end);
+        app.add_system(spawn_win_fadeout.in_set(OnUpdate(CombatState::PlayerWins)))
+            .add_system(transition_to_overworld)
+            .add_system(test_combat_end);
     }
 }
 
-fn test_combat_end(
-    mut combat_state: ResMut<NextState<CombatState>>,
-    input: Res<Input<KeyCode>>,
-    mut overworld_state: ResMut<NextState<OverworldState>>,
-) {
+fn test_combat_end(mut combat_state: ResMut<NextState<CombatState>>, input: Res<Input<KeyCode>>) {
     if input.just_pressed(KeyCode::P) {
         combat_state.set(CombatState::PlayerWins);
-        overworld_state.set(OverworldState::FreeRoam);
     }
 }
 
@@ -45,11 +36,13 @@ fn spawn_win_fadeout(
 fn transition_to_overworld(
     fadeout: Query<&Fadeout, With<VictoryFadeout>>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut combat_state: ResMut<NextState<CombatState>>,
     mut overworld_state: ResMut<NextState<OverworldState>>,
 ) {
     if let Ok(fadeout) = fadeout.get_single() {
         if fadeout.fade_in_just_finished {
             next_state.set(GameState::Overworld);
+            combat_state.set(CombatState::NotInCombat);
             overworld_state.set(OverworldState::RestoreRoom);
         }
     }

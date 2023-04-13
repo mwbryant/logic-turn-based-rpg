@@ -96,7 +96,7 @@ pub struct CombatStartTag;
 #[derive(Component, Serialize, Deserialize, TypeUuid)]
 #[uuid = "9d0b9466-8797-486e-a930-bcb696f8e2f3"]
 pub struct CombatDescriptor {
-    enemies: Vec<(Enemy, CombatStats, Character)>,
+    pub enemies: Vec<(Enemy, CombatStats, Character)>,
 }
 
 #[derive(Resource)]
@@ -104,6 +104,6 @@ pub struct CurrentRoom {
     pub current_player_translation: Vec3,
     pub background_image: String,
     pub enemies: Vec<(usize, EnemyOverworld, Vec3)>,
-    walls: Vec<WallHitBox>,
+    pub walls: Vec<WallHitBox>,
     //pub npcs: Vec<(String, Vec3)>,
 }

@@ -10,9 +10,7 @@ impl Plugin for RoomPlugin {
             .add_system(check_if_room_loaded.in_set(OnUpdate(OverworldState::LoadingRoom)))
             .add_system(spawn_current_room.in_set(OnUpdate(OverworldState::RestoreRoom)))
             .add_system(
-                update_player_translation_in_room
-                    .in_set(OnUpdate(GameState::Overworld))
-                    .in_set(OnUpdate(OverworldState::FreeRoam)),
+                update_player_translation_in_room.in_set(OnUpdate(OverworldState::FreeRoam)),
             );
     }
 }
@@ -88,13 +86,15 @@ fn spawn_current_room(
             enemy.clone(),
             descriptor,
             character,
+            OverworldEntity,
             Name::new("Enemy"),
             EnemyId(*id),
         ));
     }
 
     for hitbox in room.walls.iter() {
-        spawn_hit_box(&mut commands, hitbox.size, hitbox.position);
+        let entity = spawn_hit_box(&mut commands, hitbox.size, hitbox.position);
+        commands.entity(entity).insert(OverworldEntity);
     }
 
     commands.spawn((

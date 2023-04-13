@@ -1,0 +1,6 @@
+[book]
+authors = ["Matthew"]
+language = "en"
+multilingual = false
+src = "src"
+title = "RPG Design"

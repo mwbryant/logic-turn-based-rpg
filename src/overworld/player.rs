@@ -7,7 +7,6 @@ impl Plugin for PlayerPlugin {
         app.add_systems(
             (player_movement, camera_follow)
                 .chain()
-                .in_set(OnUpdate(GameState::Overworld))
                 .in_set(OnUpdate(OverworldState::FreeRoam)),
         );
     }

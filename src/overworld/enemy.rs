@@ -10,7 +10,6 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(enemy_start_combat.in_set(OnUpdate(OverworldState::FreeRoam)))
             .add_system(enemy_wander.in_set(OnUpdate(OverworldState::FreeRoam)))
-            .add_system(despawn_with::<EnemyOverworld>.in_schedule(OnExit(GameState::Overworld)))
             .add_system(despawn_with::<OverworldEntity>.in_schedule(OnExit(GameState::Overworld)));
     }
 }

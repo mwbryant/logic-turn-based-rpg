@@ -2,6 +2,7 @@
 name = "logic-turn-based-rpg"
 version = "0.1.0"
 edition = "2021"
+default-run = "game"
 
 [profile.dev]
 opt-level = 1

@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::start_combat::spawn_combat;
+
 pub struct CombatUIPlugin;
 
 #[derive(Component)]
@@ -16,10 +18,15 @@ pub struct EnemyHealthUIBar(pub Entity);
 
 impl Plugin for CombatUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_enemy_health_ui.in_schedule(OnEnter(GameState::Combat)))
-            .add_startup_system(spawn_header_bar_ui.in_base_set(StartupSet::PostStartup))
-            .add_system(update_header_bar_ui)
-            .add_system(update_enemy_health_ui);
+        app.add_systems(
+            (apply_system_buffers, spawn_enemy_health_ui)
+                .chain()
+                .after(spawn_combat)
+                .in_schedule(OnEnter(GameState::Combat)),
+        )
+        .add_startup_system(spawn_header_bar_ui.in_base_set(StartupSet::PostStartup))
+        .add_system(update_header_bar_ui)
+        .add_system(update_enemy_health_ui);
     }
 }
 
@@ -191,7 +198,8 @@ fn update_enemy_health_ui(
     }
 }
 
-fn spawn_enemy_health_ui(
+// Called on start combat
+pub fn spawn_enemy_health_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     enemies: Query<Entity, With<Enemy>>,
