@@ -1,14 +1,10 @@
-use crate::prelude::{ui::spawn_enemy_health_ui, *};
+use crate::prelude::*;
 
 pub struct CombatTransitionPlugin;
 
 impl Plugin for CombatTransitionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            (start_combat, spawn_enemy_health_ui)
-                .chain()
-                .in_set(OnUpdate(OverworldState::CombatStarting)),
-        );
+        app.add_system(start_combat.in_set(OnUpdate(OverworldState::CombatStarting)));
     }
 }
 

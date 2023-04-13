@@ -198,8 +198,7 @@ fn update_enemy_health_ui(
     }
 }
 
-// Called on start combat
-pub fn spawn_enemy_health_ui(
+fn spawn_enemy_health_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     enemies: Query<Entity, With<Enemy>>,
