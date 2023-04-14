@@ -4,7 +4,8 @@ pub struct FadeInPlugin;
 
 impl Plugin for FadeInPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(update_fadeout);
+        //PreUpdate prevents finishing at the end of one update and clearing the flag at the beginning of the next, causing a missed event
+        app.add_system(update_fadeout.in_base_set(CoreSet::PreUpdate));
     }
 }
 
