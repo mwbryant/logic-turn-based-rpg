@@ -7,7 +7,7 @@ on:
 
 env:
   # update with the name of the main binary
-  binary: logic-turn-based-rpg
+  binary: game
   add_binaries_to_github_release: true
   itch_target: logicprojects/logic-rpg
 

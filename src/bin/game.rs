@@ -29,7 +29,7 @@ fn main() {
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)),
         )
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(50.0))
-        .add_plugin(RapierDebugRenderPlugin::default())
+        //.add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(setup)
         .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
         .add_plugin(CombatPlugin)
