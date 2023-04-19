@@ -93,7 +93,7 @@ fn spawn_header_bar_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let player_health_background = (NodeBundle {
         style: Style {
-            size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+            size: Size::new(Val::Percent(100.0), Val::Percent(60.0)),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::SpaceBetween,
             flex_direction: FlexDirection::Row,
@@ -118,7 +118,7 @@ fn spawn_header_bar_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             "10 / 10",
             TextStyle {
                 font,
-                font_size: 36.0,
+                font_size: 48.0,
                 color: Color::WHITE,
             },
         )
