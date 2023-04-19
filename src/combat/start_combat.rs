@@ -12,7 +12,7 @@ pub fn spawn_combat(
     mut commands: Commands,
     combat_descriptor: Query<(Entity, &Handle<CombatDescriptor>), With<CombatStartTag>>,
     mut player: Query<&mut Transform, With<PlayerCombat>>,
-    mut camera: Query<&mut Transform, (With<Camera>, Without<PlayerCombat>)>,
+    mut camera: Query<&mut Transform, (With<MainCamera>, Without<PlayerCombat>)>,
     combats: Res<Assets<CombatDescriptor>>,
     assets: Res<AssetServer>,
 ) {

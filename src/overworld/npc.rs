@@ -20,7 +20,10 @@ pub struct NpcText;
 #[derive(Component)]
 pub struct DialogUI;
 
-fn update_dialog_box(mut text: Query<&mut Style, With<NpcText>>, camera: Query<&Camera>) {
+fn update_dialog_box(
+    mut text: Query<&mut Style, With<NpcText>>,
+    camera: Query<&Camera, With<MainCamera>>,
+) {
     let camera = camera.single();
 
     let screen_width = camera.logical_viewport_size().unwrap().x;
@@ -148,18 +151,24 @@ fn spawn_dialog_box(
     let parent_node = (
         NodeBundle {
             style: Style {
-                size: Size::new(Val::Percent(80.0), Val::Percent(30.0)),
+                //XXX using Px instead of Percent because UI uses window size, not camera size
+                size: Size::new(Val::Px(1920.0 * 0.800), Val::Px(1080.0 * 0.300)),
                 align_self: AlignSelf::FlexEnd,
                 align_items: AlignItems::FlexStart,
                 justify_content: JustifyContent::FlexStart,
                 flex_direction: FlexDirection::Row,
                 position_type: PositionType::Absolute,
-                position: UiRect::left(Val::Percent(10.0)),
-                margin: UiRect::bottom(Val::Percent(4.0)),
-                padding: UiRect::new(Val::Percent(1.0), Val::Auto, Val::Px(15.0), Val::Auto),
+                position: UiRect::new(
+                    Val::Px(1920.0 * 0.100),
+                    Val::Auto,
+                    Val::Px(700.0),
+                    Val::Auto,
+                ),
+                //margin: UiRect::top(Val::Px(700.0)),
+                padding: UiRect::new(Val::Px(1920.0 * 0.01), Val::Auto, Val::Px(15.0), Val::Auto),
                 ..default()
             },
-            background_color: BackgroundColor(Color::WHITE),
+            background_color: BackgroundColor(Color::BEIGE),
             ..default()
         },
         DialogUI,
@@ -171,7 +180,7 @@ fn spawn_dialog_box(
             starting_text,
             TextStyle {
                 font,
-                font_size: 36.0,
+                font_size: 64.0,
                 color: Color::BLACK,
             },
         )

@@ -13,8 +13,8 @@ impl Plugin for PlayerPlugin {
 }
 
 fn camera_follow(
-    mut camera: Query<&mut Transform, With<Camera>>,
-    player: Query<&Transform, (With<PlayerOverworld>, Without<Camera>)>,
+    mut camera: Query<&mut Transform, With<MainCamera>>,
+    player: Query<&Transform, (With<PlayerOverworld>, Without<MainCamera>)>,
 ) {
     let mut camera = camera.single_mut();
     let player = player.single();

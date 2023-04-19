@@ -2,9 +2,6 @@ use bevy::{input::common_conditions::input_toggle_active, render::camera::Scalin
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
-pub const WIDTH: f32 = 1280.0;
-pub const HEIGHT: f32 = 720.0;
-
 fn main() {
     let mut app = App::new();
 
@@ -17,8 +14,8 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Logic Game".into(),
-                        resolution: (WIDTH, HEIGHT).into(),
-                        resizable: false,
+                        resolution: (1280.0, 720.0).into(),
+                        resizable: true,
                         ..default()
                     }),
                     ..default()
@@ -39,14 +36,7 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands, assets: Res<AssetServer>) {
-    let mut camera = Camera2dBundle::default();
-    let size = 10.0;
-
-    camera.projection.scaling_mode = ScalingMode::FixedVertical(size);
-
-    commands.spawn(camera);
-
+fn setup(mut commands: Commands) {
     commands.spawn((
         CharacterBundle::new(Vec3::new(-3.0, 0.0, CHARACTER_Z), Character::Knight),
         PlayerCombat::default(),

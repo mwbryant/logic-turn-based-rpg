@@ -51,14 +51,15 @@ fn spawn_header_bar_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let parent_node = (
         NodeBundle {
             style: Style {
-                size: Size::new(Val::Percent(100.0), Val::Percent(15.0)),
+                //XXX using Px here because UI isn't based on camera size, just window size
+                size: Size::new(Val::Px(1920.0), Val::Px(1080.0 * 0.15)),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
                 flex_direction: FlexDirection::Row,
                 position_type: PositionType::Absolute,
                 ..default()
             },
-            //background_color: BackgroundColor(Color::WHITE),
+            //background_color: BackgroundColor(Color::GREEN),
             ..default()
         },
         HeaderBarUI,
@@ -142,7 +143,7 @@ fn update_enemy_health_ui(
     mut commands: Commands,
     enemies: Query<(&Enemy, &CombatStats)>,
     mut parent: Query<(Entity, &mut Style, &EnemyHealthUI)>,
-    camera: Query<(&Camera, &GlobalTransform)>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut bar: Query<(&mut Style, &EnemyHealthUIBar), Without<EnemyHealthUI>>,
     mut text: Query<(&mut Text, &EnemyHealthUIText)>,
 ) {

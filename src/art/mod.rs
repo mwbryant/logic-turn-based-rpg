@@ -1,7 +1,9 @@
 mod animation;
 mod fade_in;
 mod particles;
+mod post_processing;
 pub mod sprite_sheets;
+use bevy::render::camera::CameraPlugin;
 use serde::{Deserialize, Serialize};
 pub use sprite_sheets::*;
 
@@ -10,9 +12,13 @@ use crate::prelude::*;
 pub use fade_in::spawn_fadeout;
 pub use particles::create_new_rect_emitter;
 
+pub const WIDTH: f32 = 1920.0;
+pub const HEIGHT: f32 = 1080.0;
+
 use self::animation::AnimationPlugin;
 use self::fade_in::FadeInPlugin;
 use self::particles::ParticlePlugin;
+use self::post_processing::PostProcessingPlugin;
 
 pub struct ArtPlugin;
 
@@ -22,6 +28,7 @@ impl Plugin for ArtPlugin {
             .add_plugin(ParticlePlugin)
             .add_plugin(AnimationPlugin)
             .add_plugin(FadeInPlugin)
+            .add_plugin(PostProcessingPlugin)
             .register_type::<Icon>()
             .register_type::<Particle>()
             .register_type::<FallingParticle>()
@@ -39,6 +46,12 @@ pub enum FadeoutState {
     Hold,
     FadingOut,
 }
+
+#[derive(Component, Reflect)]
+pub struct MainCamera;
+
+#[derive(Resource)]
+pub struct MainRender(pub Handle<Image>);
 
 #[derive(Component, Reflect)]
 pub struct Fadeout {
