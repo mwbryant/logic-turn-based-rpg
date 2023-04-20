@@ -38,7 +38,7 @@ fn check_if_room_loaded(
         }
 
         let room = CurrentRoom {
-            current_player_translation: Vec3::new(0.0, 0.0, CHARACTER_Z),
+            current_player_translation: Vec3::new(1.5, 0.5, -3.0),
             background_image: "Background_Mockup.png".to_string(),
             enemies,
             walls: room.walls.clone(),
@@ -76,11 +76,14 @@ fn spawn_current_room(
     room: Res<CurrentRoom>,
     mut player: Query<&mut Transform, With<PlayerOverworld>>,
     mut next_state: ResMut<NextState<OverworldState>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
-        let mut character = CharacterBundle::new(*position, Character::GreenBase);
-        character.sprite_sheet.transform.translation.z = ENEMY_Z;
+        let mut character =
+            CharacterBundle::new(*position, Character::GreenBase, &mut meshes, &mut materials);
+        //character.sprite_sheet.transform.translation.z = ENEMY_Z;
 
         commands.spawn((
             enemy.clone(),
@@ -97,6 +100,8 @@ fn spawn_current_room(
         commands.entity(entity).insert(OverworldEntity);
     }
 
+    /*
+
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -110,6 +115,18 @@ fn spawn_current_room(
         Name::new("Background"),
         OverworldEntity,
     ));
+
+    */
+
+    let my_gltf = assets.load("3d/cave.glb#Scene0");
+
+    // to position our 3d model, simply use the Transform
+    // in the SceneBundle
+    commands.spawn(SceneBundle {
+        scene: my_gltf,
+        //transform: Transform::from_xyz(2.0, 0.0, -5.0),
+        ..Default::default()
+    });
 
     let mut player = player.single_mut();
     player.translation = room.current_player_translation;

@@ -12,11 +12,8 @@ impl Plugin for SpriteSheetPlugin {
 }
 
 fn update_art(
-    mut characters: Query<(
-        &mut TextureAtlasSprite,
-        &mut Handle<TextureAtlas>,
-        &Character,
-    )>,
+    mut characters: Query<(&Handle<StandardMaterial>, &Handle<Mesh>, &Character)>,
+    /*
     mut weapons: Query<
         (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Weapon),
         Without<Character>,
@@ -29,87 +26,64 @@ fn update_art(
         (&mut TextureAtlasSprite, &mut Handle<TextureAtlas>, &Planet),
         (Without<Character>, Without<Weapon>, Without<Icon>),
     >,
+    */
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
-    for (mut sprite, mut atlas, character) in &mut characters {
-        *atlas = sprite_sheets.character_atlas.clone();
-        sprite.index = sprite_sheets.characters[character];
-    }
-    for (mut sprite, mut atlas, weapon) in &mut weapons {
-        *atlas = sprite_sheets.character_atlas.clone();
-        sprite.index = sprite_sheets.weapons[weapon];
-    }
-    for (mut sprite, mut atlas, icon) in &mut icons {
-        *atlas = sprite_sheets.icon_atlas.clone();
-        sprite.index = sprite_sheets.icons[icon];
-    }
-    for (mut sprite, mut atlas, planet) in &mut planets {
-        *atlas = sprite_sheets.planet_atlas.clone();
-        sprite.index = sprite_sheets.planets[planet];
+    for (material, mesh, character) in &mut characters {
+        let mut material = materials.get_mut(material).unwrap();
+        material.base_color_texture = Some(sprite_sheets.character_atlas.clone());
+        material.alpha_mode = AlphaMode::Blend;
+        let mesh = meshes.get_mut(mesh).unwrap();
+        //FIXME gross
+        let index = sprite_sheets.characters[character];
+        let size = sprite_sheets.character_size;
+        let u_left = index.0 as f32 / size.0 as f32;
+        let u_right = index.0 as f32 / size.0 as f32 + 1.0 / size.0 as f32;
+        let u_bottom = index.1 as f32 / size.1 as f32;
+        let u_top = index.1 as f32 / size.1 as f32 + 1.0 / size.1 as f32;
+        let uv = vec![
+            [u_left, u_top],
+            [u_left, u_bottom],
+            [u_right, u_bottom],
+            [u_right, u_top],
+        ];
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv);
     }
 }
 
-fn setup_spritesheet_maps(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
-    let texture_handle = asset_server.load("characters/Spritesheet/roguelikeChar_transparent.png");
-    let texture_atlas = TextureAtlas::from_grid(
-        texture_handle,
-        Vec2::new(16.0, 16.0),
-        CHARACTER_SHEET_WIDTH,
-        12,
-        Some(Vec2::splat(1.0)),
-        None,
-    );
-    let character_atlas = texture_atlases.add(texture_atlas);
+fn setup_spritesheet_maps(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let character_handle =
+        asset_server.load("characters/Spritesheet/roguelikeChar_transparent.png");
 
-    let texture_handle = asset_server.load("input_icons/Tilemap/tilemap.png");
-    let texture_atlas = TextureAtlas::from_grid(
-        texture_handle,
-        Vec2::new(16.0, 16.0),
-        ICON_SHEET_WIDTH,
-        24,
-        Some(Vec2::splat(1.0)),
-        None,
-    );
-    let icon_atlas = texture_atlases.add(texture_atlas);
+    let icon_handle = asset_server.load("input_icons/Tilemap/tilemap.png");
 
-    let texture_handle = asset_server.load("planets/Planets/planet08.png");
-    let texture_atlas = TextureAtlas::from_grid(
-        texture_handle,
-        Vec2::new(1280.0, 1280.0),
-        1,
-        1,
-        Some(Vec2::splat(0.0)),
-        None,
-    );
-    let planet_atlas = texture_atlases.add(texture_atlas);
+    let planet_handle = asset_server.load("planets/Planets/planet08.png");
 
     let characters = HashMap::from([
-        (Character::WhiteBase, 0),
-        (Character::WhiteBaseMouth, 1),
-        (Character::TanBase, CHARACTER_SHEET_WIDTH),
-        (Character::TanBaseMouth, CHARACTER_SHEET_WIDTH + 1),
-        (Character::BlackBase, CHARACTER_SHEET_WIDTH * 2),
-        (Character::BlackBaseMouth, CHARACTER_SHEET_WIDTH * 2 + 1),
-        (Character::GreenBase, CHARACTER_SHEET_WIDTH * 3),
-        (Character::GreenBaseMouth, CHARACTER_SHEET_WIDTH * 3 + 1),
-        (Character::WomanBraid, CHARACTER_SHEET_WIDTH * 5),
-        (Character::WomanOld, CHARACTER_SHEET_WIDTH * 5 + 1),
-        (Character::ManStrap, CHARACTER_SHEET_WIDTH * 6),
-        (Character::ManBeard, CHARACTER_SHEET_WIDTH * 6 + 1),
-        (Character::WomanBraidAlt, CHARACTER_SHEET_WIDTH * 7),
-        (Character::WomanTwoBraid, CHARACTER_SHEET_WIDTH * 7 + 1),
-        (Character::ManMohawk, CHARACTER_SHEET_WIDTH * 8),
-        (Character::ManBaldish, CHARACTER_SHEET_WIDTH * 8 + 1),
-        (Character::WomanRedhead, CHARACTER_SHEET_WIDTH * 9),
-        (Character::WomanSoldier, CHARACTER_SHEET_WIDTH * 9 + 1),
-        (Character::Jester, CHARACTER_SHEET_WIDTH * 10),
-        (Character::ManOld, CHARACTER_SHEET_WIDTH * 10 + 1),
-        (Character::KnightArmed, CHARACTER_SHEET_WIDTH * 11),
-        (Character::Knight, CHARACTER_SHEET_WIDTH * 11 + 1),
+        (Character::WhiteBase, (0, 0)),
+        (Character::WhiteBaseMouth, (1, 0)),
+        (Character::TanBase, (0, 1)),
+        (Character::TanBaseMouth, (1, 1)),
+        (Character::BlackBase, (0, 2)),
+        (Character::BlackBaseMouth, (1, 2)),
+        (Character::GreenBase, (0, 3)),
+        (Character::GreenBaseMouth, (1, 3)),
+        (Character::WomanBraid, (0, 5)),
+        (Character::WomanOld, (1, 5)),
+        (Character::ManStrap, (0, 6)),
+        (Character::ManBeard, (1, 6)),
+        (Character::WomanBraidAlt, (0, 7)),
+        (Character::WomanTwoBraid, (1, 7)),
+        (Character::ManMohawk, (0, 8)),
+        (Character::ManBaldish, (1, 8)),
+        (Character::WomanRedhead, (0, 9)),
+        (Character::WomanSoldier, (1, 9)),
+        (Character::Jester, (0, 10)),
+        (Character::ManOld, (1, 10)),
+        (Character::KnightArmed, (0, 11)),
+        (Character::Knight, (1, 11)),
     ]);
 
     let icons = HashMap::from([
@@ -122,9 +96,10 @@ fn setup_spritesheet_maps(
     let weapons = HashMap::from([(Weapon::BasicStaffOrange, 42), (Weapon::BasicSpear, 47)]);
 
     commands.insert_resource(SpriteSheetMaps {
-        character_atlas,
-        icon_atlas,
-        planet_atlas,
+        character_atlas: character_handle,
+        icon_atlas: icon_handle,
+        planet_atlas: planet_handle,
+        character_size: (CHARACTER_SHEET_WIDTH, CHARACTER_SHEET_HEIGHT),
         characters,
         weapons,
         icons,
@@ -135,12 +110,7 @@ fn setup_spritesheet_maps(
 impl Default for CharacterBundle {
     fn default() -> Self {
         Self {
-            sprite_sheet: SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    custom_size: Some(Vec2::splat(1.0)),
-                    ..default()
-                },
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, CHARACTER_Z)),
+            sprite: MaterialMeshBundle {
                 ..Default::default()
             },
             // Calling ..default here causes a stack overflow........
@@ -185,13 +155,24 @@ impl Default for PlanetBundle {
 }
 
 impl CharacterBundle {
-    pub fn new(position: Vec3, character: Character) -> Self {
+    pub fn new(
+        position: Vec3,
+        character: Character,
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<StandardMaterial>,
+    ) -> Self {
+        let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0, 1.0))));
+
+        let material_handle = materials.add(StandardMaterial { ..default() });
+
         let mut bundle = CharacterBundle {
             character,
             ..default()
         };
 
-        bundle.sprite_sheet.transform.translation = position;
+        bundle.sprite.transform.translation = position;
+        bundle.sprite.mesh = quad_handle;
+        bundle.sprite.material = material_handle;
 
         bundle
     }

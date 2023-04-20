@@ -4,6 +4,7 @@ mod particles;
 mod post_processing;
 pub mod sprite_sheets;
 use bevy::render::camera::CameraPlugin;
+use bevy::sprite::MaterialMesh2dBundle;
 use serde::{Deserialize, Serialize};
 pub use sprite_sheets::*;
 
@@ -121,7 +122,7 @@ pub struct WeaponBundle {
 #[derive(Bundle)]
 pub struct CharacterBundle {
     #[bundle]
-    pub sprite_sheet: SpriteSheetBundle,
+    pub sprite: MaterialMeshBundle<StandardMaterial>,
     hand_offset: HandOffset,
     character: Character,
 }
@@ -151,6 +152,7 @@ pub struct HandOffset {
 }
 
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
+pub const CHARACTER_SHEET_HEIGHT: usize = 12;
 pub const ICON_SHEET_WIDTH: usize = 34;
 
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
@@ -196,10 +198,11 @@ pub enum Planet {
 
 #[derive(Resource)]
 pub struct SpriteSheetMaps {
-    character_atlas: Handle<TextureAtlas>,
-    icon_atlas: Handle<TextureAtlas>,
-    planet_atlas: Handle<TextureAtlas>,
-    pub characters: HashMap<Character, usize>,
+    character_atlas: Handle<Image>,
+    icon_atlas: Handle<Image>,
+    planet_atlas: Handle<Image>,
+    pub character_size: (usize, usize),
+    pub characters: HashMap<Character, (usize, usize)>,
     pub weapons: HashMap<Weapon, usize>,
     pub icons: HashMap<Icon, usize>,
     pub planets: HashMap<Planet, usize>,

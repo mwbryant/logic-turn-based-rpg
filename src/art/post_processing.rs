@@ -129,8 +129,8 @@ fn setup_camera(
 
     let render_image_handle = images.add(render_target);
 
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scaling_mode = ScalingMode::FixedVertical(10.0);
+    let mut camera = Camera3dBundle::default();
+    //camera.projection.scaling_mode = ScalingMode::FixedVertical(10.0);
     //camera.transform.translation.x = 320.0;
     //camera.transform.translation.y = 240.0;
     camera.camera.target = RenderTarget::Image(render_image_handle.clone());

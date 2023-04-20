@@ -25,8 +25,8 @@ fn main() {
         .add_plugin(
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)),
         )
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(50.0))
-        //.add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(setup)
         .add_system(update_lifetimes.in_base_set(CoreSet::PostUpdate))
         .add_plugin(CombatPlugin)
@@ -36,12 +36,21 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     commands.spawn((
-        CharacterBundle::new(Vec3::new(-3.0, 0.0, CHARACTER_Z), Character::Knight),
+        CharacterBundle::new(
+            Vec3::new(-3.0, 0.0, CHARACTER_Z),
+            Character::Knight,
+            &mut meshes,
+            &mut materials,
+        ),
         PlayerCombat::default(),
         PlayerOverworld {
-            movement_speed: 2.5,
+            movement_speed: 3.5,
         },
         CombatStats {
             health: 10,
@@ -50,8 +59,12 @@ fn setup(mut commands: Commands) {
             defense: 0,
         },
         RigidBody::KinematicPositionBased,
-        Collider::round_cuboid(0.09, 0.11, 0.006),
-        KinematicCharacterController::default(),
+        //Collider::round_cuboid(0.09, 0.11, 0.11, 0.006),
+        Collider::cuboid(0.4, 0.50, 0.15),
+        KinematicCharacterController {
+            up: Vec3::Z,
+            ..default()
+        },
         Name::new("Player"),
     ));
 

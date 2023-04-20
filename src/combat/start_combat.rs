@@ -13,6 +13,8 @@ pub fn spawn_combat(
     combat_descriptor: Query<(Entity, &Handle<CombatDescriptor>), With<CombatStartTag>>,
     mut player: Query<&mut Transform, With<PlayerCombat>>,
     mut camera: Query<&mut Transform, (With<MainCamera>, Without<PlayerCombat>)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     combats: Res<Assets<CombatDescriptor>>,
     assets: Res<AssetServer>,
 ) {
@@ -37,7 +39,12 @@ pub fn spawn_combat(
             3 => 4.2,
             _ => unreachable!("bad slot"),
         };
-        let character = CharacterBundle::new(Vec3::new(x, 0.0, ENEMY_Z), character.clone());
+        let character = CharacterBundle::new(
+            Vec3::new(x, 0.0, ENEMY_Z),
+            character.clone(),
+            &mut meshes,
+            &mut materials,
+        );
         commands.spawn((character, *enemy, *stats, Name::new("Enemy"), CombatEntity));
     }
 

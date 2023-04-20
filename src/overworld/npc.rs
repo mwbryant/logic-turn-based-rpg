@@ -35,7 +35,11 @@ fn update_dialog_box(
     }
 }
 
-fn spawn_test_npc(mut commands: Commands) {
+fn spawn_test_npc(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     let icon = commands
         .spawn((
             IconBundle::new(Vec2::new(0.0, 1.0), Icon::KeyE, Vec2::splat(0.7)),
@@ -46,25 +50,13 @@ fn spawn_test_npc(mut commands: Commands) {
 
     commands
         .spawn((
-            CharacterBundle::new(Vec3::new(-3.0, 3.0, NPC_Z), Character::WomanOld),
+            CharacterBundle::new(
+                Vec3::new(-3.0, 3.0, NPC_Z),
+                Character::WomanOld,
+                &mut meshes,
+                &mut materials,
+            ),
             Npc(1),
-            Name::new("TestNPC"),
-            OverworldEntity,
-        ))
-        .add_child(icon);
-
-    let icon = commands
-        .spawn((
-            IconBundle::new(Vec2::new(0.0, 1.0), Icon::KeyE, Vec2::splat(0.7)),
-            InteractIcon,
-            Name::new("Npc Interact Icon"),
-        ))
-        .id();
-
-    commands
-        .spawn((
-            CharacterBundle::new(Vec3::new(-0.0, 3.0, NPC_Z), Character::ManOld),
-            Npc(2),
             Name::new("TestNPC"),
             OverworldEntity,
         ))

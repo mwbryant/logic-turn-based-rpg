@@ -5,14 +5,8 @@ RoomDescriptor(
         "config/basic_enemy2.enemy.ron"
     ],
     walls: [  
-        WallHitBox (position: (1, 1.5), size: (7.0, 12.0)),
-        WallHitBox (position: (8.0, -5.5), size: (16.0, 12.0)),
-        WallHitBox (position: (-9.0, -0.5), size: (5.0, 2.0)),
-        WallHitBox (position: (-13.0, -1.5), size: (1.0, 1.0)),
-        WallHitBox (position: (-13.0, -7.5), size: (1.0, 1.0)),
-        WallHitBox (position: (-4.0, 8.5), size: (5.0, 3.0)),
-        WallHitBox (position: (-15.0, 1.5), size: (11.0, 12.0)),
-        WallHitBox (position: (-16.0, -12.5), size: (2.0, 15.0)),
-        WallHitBox (position: (-15.0, -12.5), size: (39.0, 4.0)),
+        WallHitBox (position: (-2.0, -12.0), size: (1.0, 7.0)),
+        WallHitBox (position: (4.0, -12.0), size: (1.0, 7.0)),
+        WallHitBox (position: (-1.0, -13.0), size: (5.0, 1.0)),
     ]
 )

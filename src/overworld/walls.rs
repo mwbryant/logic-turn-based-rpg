@@ -15,11 +15,11 @@ pub fn spawn_hit_box(
 ) -> Entity {
     commands
         .spawn((
-            Collider::cuboid(box_size.x / 2.0, box_size.y / 2.0),
+            Collider::cuboid(box_size.x / 2.0, 2.0, box_size.y / 2.0),
             TransformBundle::from(Transform::from_xyz(
                 bottom_left_position.x + box_size.x / 2.0,
-                bottom_left_position.y + box_size.y / 2.0,
                 0.0,
+                bottom_left_position.y + box_size.y / 2.0,
             )),
             Name::new("Hitbox"),
         ))

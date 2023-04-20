@@ -2,3 +2,5 @@
 .vscode
 wasm/bevy_game*
 wasm/assets
+*.blend
+*.blend1

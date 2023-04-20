@@ -18,7 +18,11 @@ fn camera_follow(
 ) {
     let mut camera = camera.single_mut();
     let player = player.single();
-    camera.translation = player.translation.truncate().extend(999.0);
+    camera.translation.x = player.translation.x;
+    camera.translation.z = player.translation.z + 10.0;
+    camera.translation.y = 5.0;
+    camera.look_at(player.translation, Vec3::Y);
+    camera.rotation.z = 0.0;
 }
 
 fn player_movement(
@@ -27,12 +31,12 @@ fn player_movement(
     time: Res<Time>,
 ) {
     let (player, mut controller) = player.get_single_mut().expect("1 Player");
-    let mut target_movement = Vec2::ZERO;
+    let mut target_movement = Vec3::ZERO;
     if input.pressed(KeyCode::W) {
-        target_movement.y += player.movement_speed * time.delta_seconds();
+        target_movement.z -= player.movement_speed * time.delta_seconds();
     }
     if input.pressed(KeyCode::S) {
-        target_movement.y -= player.movement_speed * time.delta_seconds();
+        target_movement.z += player.movement_speed * time.delta_seconds();
     }
     if input.pressed(KeyCode::A) {
         target_movement.x -= player.movement_speed * time.delta_seconds();
