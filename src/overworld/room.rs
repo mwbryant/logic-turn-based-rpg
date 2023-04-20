@@ -30,7 +30,11 @@ fn check_if_room_loaded(
             //Try loading, each frame this call should return the same handle
             let handle = assets.load(config);
             if let Some(enemy) = enemy.get(&handle) {
-                enemies.push((id, enemy.clone(), enemy.home.extend(ENEMY_Z)));
+                enemies.push((
+                    id,
+                    enemy.clone(),
+                    Vec3::new(enemy.home.x, 0.5, enemy.home.y),
+                ));
             } else {
                 info!("Waiting on enemy load");
                 return;
@@ -120,13 +124,14 @@ fn spawn_current_room(
 
     let my_gltf = assets.load("3d/cave.glb#Scene0");
 
-    // to position our 3d model, simply use the Transform
-    // in the SceneBundle
-    commands.spawn(SceneBundle {
-        scene: my_gltf,
-        //transform: Transform::from_xyz(2.0, 0.0, -5.0),
-        ..Default::default()
-    });
+    commands.spawn((
+        SceneBundle {
+            scene: my_gltf,
+            ..Default::default()
+        },
+        Name::new("Overworld Mesh"),
+        OverworldEntity,
+    ));
 
     let mut player = player.single_mut();
     player.translation = room.current_player_translation;

@@ -158,21 +158,29 @@ impl CharacterBundle {
     pub fn new(
         position: Vec3,
         character: Character,
+        //XXX I hate needing this here now...
         meshes: &mut Assets<Mesh>,
         materials: &mut Assets<StandardMaterial>,
     ) -> Self {
         let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0, 1.0))));
 
-        let material_handle = materials.add(StandardMaterial { ..default() });
+        let material_handle = materials.add(StandardMaterial {
+            double_sided: true,
+            cull_mode: None,
+            ..default()
+        });
 
         let mut bundle = CharacterBundle {
             character,
+            sprite: MaterialMeshBundle {
+                mesh: quad_handle,
+                material: material_handle,
+                ..default()
+            },
             ..default()
         };
 
         bundle.sprite.transform.translation = position;
-        bundle.sprite.mesh = quad_handle;
-        bundle.sprite.material = material_handle;
 
         bundle
     }

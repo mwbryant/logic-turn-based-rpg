@@ -19,9 +19,10 @@ pub fn spawn_combat(
     assets: Res<AssetServer>,
 ) {
     let mut player = player.single_mut();
-    player.translation = Vec3::new(-3.0, 0.0, CHARACTER_Z);
+    player.translation = Vec3::new(-3.0, 0.5, 0.0);
     let mut camera = camera.single_mut();
-    camera.translation = Vec3::new(0.0, 0.0, 999.0);
+    camera.translation = Vec3::new(0.0, 5.0, 8.0);
+    camera.look_at(Vec3::ZERO, Vec3::Y);
 
     let (entity, combat_desc) = &combat_descriptor.single();
     commands.entity(*entity).despawn_recursive();
@@ -40,7 +41,7 @@ pub fn spawn_combat(
             _ => unreachable!("bad slot"),
         };
         let character = CharacterBundle::new(
-            Vec3::new(x, 0.0, ENEMY_Z),
+            Vec3::new(x, 0.5, 0.0),
             character.clone(),
             &mut meshes,
             &mut materials,
@@ -48,6 +49,18 @@ pub fn spawn_combat(
         commands.spawn((character, *enemy, *stats, Name::new("Enemy"), CombatEntity));
     }
 
+    let my_gltf = assets.load("3d/stage.glb#Scene0");
+
+    commands.spawn((
+        SceneBundle {
+            scene: my_gltf,
+            ..Default::default()
+        },
+        Name::new("Stage Mesh"),
+        CombatEntity,
+    ));
+
+    /*
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -61,7 +74,9 @@ pub fn spawn_combat(
         Name::new("Background"),
         CombatEntity,
     ));
+    */
 
+    /*
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -75,4 +90,5 @@ pub fn spawn_combat(
         Name::new("Background"),
         CombatEntity,
     ));
+    */
 }

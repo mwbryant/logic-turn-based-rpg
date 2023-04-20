@@ -51,7 +51,7 @@ fn spawn_test_npc(
     commands
         .spawn((
             CharacterBundle::new(
-                Vec3::new(-3.0, 3.0, NPC_Z),
+                Vec3::new(3.0, 0.5, -6.0),
                 Character::WomanOld,
                 &mut meshes,
                 &mut materials,

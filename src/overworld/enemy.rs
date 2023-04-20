@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use bevy::math::Vec3Swizzles;
 use rand::Rng;
 
 use crate::prelude::*;
@@ -27,11 +28,7 @@ fn enemy_start_combat(
     let transform = player.get_single().expect("Only 1 Player");
 
     for (enemy_transform, enemy, id) in &enemies {
-        if Vec2::distance(
-            transform.translation.truncate(),
-            enemy_transform.translation.truncate(),
-        ) < 0.5
-        {
+        if Vec3::distance(transform.translation, enemy_transform.translation) < 0.5 {
             info!("Spawning combat");
             let combat: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
             commands.spawn((combat, CombatStartTag));
@@ -62,10 +59,11 @@ fn enemy_wander(mut enemies: Query<(&mut Transform, &mut EnemyOverworld)>, time:
             enemy.direction = Vec2::new(x, y).normalize();
         }
 
-        if (transform.translation.truncate() - enemy.home).length() > enemy.wander_range {
-            enemy.direction = -(transform.translation.truncate() - enemy.home).normalize();
+        if (transform.translation.xzy().truncate() - enemy.home).length() > enemy.wander_range {
+            enemy.direction = -(transform.translation.xzy().truncate() - enemy.home).normalize();
         }
 
-        transform.translation += enemy.direction.extend(0.0) * time.delta_seconds();
+        transform.translation +=
+            Vec3::new(enemy.direction.x, 0.0, enemy.direction.y) * time.delta_seconds();
     }
 }

@@ -1,4 +1,9 @@
-use bevy::{input::common_conditions::input_toggle_active, render::camera::ScalingMode};
+use std::f32::consts::PI;
+
+use bevy::{
+    input::common_conditions::input_toggle_active, pbr::CascadeShadowConfigBuilder,
+    render::camera::ScalingMode,
+};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
@@ -41,9 +46,25 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    // directional 'sun' light
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 2000.0,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            rotation: Quat::from_euler(EulerRot::XYZ, -PI / 4., -PI / 9., 0.0),
+            ..default()
+        },
+        ..default()
+    });
+
     commands.spawn((
         CharacterBundle::new(
-            Vec3::new(-3.0, 0.0, CHARACTER_Z),
+            //Set by room config
+            Vec3::new(-3.0, 0.0, 0.0),
             Character::Knight,
             &mut meshes,
             &mut materials,
