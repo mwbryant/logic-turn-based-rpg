@@ -11,5 +11,8 @@ RoomDescriptor(
         WallHitBox (position: (-11.0, -6.0), size: (10.0, 1.0)),
         WallHitBox (position: (-12.0, -5.0), size: (1.0, 10.0)),
         WallHitBox (position: (4.0, -6.0), size: (7.0, 1.0)),
+        WallHitBox (position: (11.0, -5.0), size: (1.0, 7.0)),
+        WallHitBox (position: (11.0, 1.0), size: (8.0, 1.0)),
+        WallHitBox (position: (-11.0, 5.0), size: (30.0, 1.0)),
     ]
 )

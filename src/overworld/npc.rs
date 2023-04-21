@@ -1,3 +1,4 @@
+use bevy::pbr::NotShadowCaster;
 use bevy_easings::Lerp;
 
 use crate::prelude::*;
@@ -38,9 +39,10 @@ fn update_dialog_box(
 fn spawn_test_npc(mut commands: Commands) {
     let icon = commands
         .spawn((
-            Transform::from_xyz(0., 1.0, 0.0),
+            Transform::from_xyz(0., 1.0, 0.0).with_scale(Vec3::splat(0.5)),
             BillboardSprite::Icon(Icon::KeyE),
             InteractIcon,
+            NotShadowCaster,
             Name::new("Npc Interact Icon"),
         ))
         .id();
@@ -59,19 +61,21 @@ fn spawn_test_npc(mut commands: Commands) {
 fn update_npc_icon(
     npcs: Query<(&Children, &Transform), With<Npc>>,
     player: Query<&Transform, (With<PlayerOverworld>, Without<Npc>)>,
-    mut icons: Query<&mut TextureAtlasSprite, With<InteractIcon>>,
+    icons: Query<&Handle<StandardMaterial>, With<InteractIcon>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let player = player.single();
     for (children, npc) in &npcs {
-        let distance = Vec2::distance(player.translation.truncate(), npc.translation.truncate());
+        let distance = Vec3::distance(player.translation, npc.translation);
         for child in children {
-            if let Ok(mut sprite) = icons.get_mut(*child) {
+            if let Ok(sprite) = icons.get(*child) {
                 let x_intercept = 2.5;
                 let lerp_range = 1.0;
                 let lerp_value = -(distance - x_intercept) / lerp_range;
                 let alpha = Lerp::lerp(&0.0, &1.0, &lerp_value);
 
-                sprite.color.set_a(alpha);
+                let material = materials.get_mut(sprite).unwrap();
+                material.base_color.set_a(alpha);
             }
         }
     }
