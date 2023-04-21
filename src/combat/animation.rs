@@ -45,9 +45,10 @@ impl Plugin for CombatAnimationPlugin {
 
 //TODO player location determined from config somehow
 fn animate_melee(
-    mut attacker: Query<(&mut Transform, &Children), Without<Weapon>>,
+    mut attacker: Query<(&mut Transform, &Children)>,
     attack: Query<(&Attack, &AttackAnimation)>,
-    mut weapon: Query<&mut Transform, With<Weapon>>,
+    //FIXME specifically a weapon, probably a better way to select this
+    mut weapon: Query<&mut Transform, (Without<Children>, With<BillboardSprite>)>,
 ) {
     if let Ok((attack, animation)) = attack.get_single() {
         if !matches!(attack.attack_type, WeaponAttackType::Melee) {
@@ -102,11 +103,9 @@ fn animate_ranged(
     mut commands: Commands,
     mut attacker: Query<(&mut Transform, &Children), (Without<Projectile>, Without<Weapon>)>,
     attack: Query<(&Attack, &AttackAnimation)>,
-    mut projectile: Query<
-        (Entity, &mut Transform),
-        (With<WeaponGraphic>, With<Projectile>, Without<Weapon>),
-    >,
-    mut weapon: Query<&mut Transform, With<Weapon>>,
+    mut projectile: Query<(Entity, &mut Transform), (With<WeaponGraphic>, With<Projectile>)>,
+    //FIXME better detection here
+    mut weapon: Query<&mut Transform, (Without<Projectile>, Without<Children>)>,
 ) {
     if let Ok((attack, animation)) = attack.get_single() {
         if !matches!(attack.attack_type, WeaponAttackType::Range) {
@@ -144,11 +143,11 @@ fn animate_ranged(
             AttackStage::WalkUp => {
                 if projectile.iter().count() == 0 {
                     //spawn projectile
-                    commands.spawn((
-                        PlanetBundle::new(Vec2::new(0.0, 0.4), Planet::Fireball),
-                        Projectile,
-                        WeaponGraphic,
-                    ));
+                    //commands.spawn((
+                    //PlanetBundle::new(Vec2::new(0.0, 0.4), Planet::Fireball),
+                    //Projectile,
+                    //WeaponGraphic,
+                    //));
                 } else {
                     let (_, mut projectile_transform) =
                         projectile.get_single_mut().expect("too many projectiles");
@@ -173,19 +172,15 @@ fn spawn_enemy_weapon(
     attack: Query<&Attack>,
     enemy: Query<(Entity, &HandOffset), With<Enemy>>,
 ) {
-    let weapon = Weapon::BasicSpear;
+    let weapon = BillboardSprite::Weapon(Weapon::BasicSpear);
     let attack = attack.get_single().expect("No attack or multiple");
     let (enemy, hand) = enemy.get(attack.attacker).expect("Attacker is not enemy");
 
     let new_ent = commands
         .spawn((
-            WeaponBundle::new(
-                //FIXME magic config
-                hand.left,
-                weapon,
-                Vec2::splat(1.0),
-            ),
+            SpatialBundle::from_transform(Transform::from_xyz(hand.left.x, 0.0, hand.left.y)),
             WeaponGraphic,
+            weapon,
             Name::new("Weapon Graphic"),
         ))
         .id();
@@ -201,7 +196,8 @@ fn spawn_player_weapon(
     let (player, hand) = player.get_single().expect("No Player");
     let new_ent = commands
         .spawn((
-            WeaponBundle::new(hand.right, weapon.clone(), Vec2::splat(1.0)),
+            BillboardSprite::Weapon(weapon.clone()),
+            SpatialBundle::from_transform(Transform::from_xyz(hand.right.x, 0.0, hand.right.y)),
             WeaponGraphic,
             Name::new("Weapon Graphic"),
         ))

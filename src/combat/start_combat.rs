@@ -21,8 +21,8 @@ pub fn spawn_combat(
     let mut player = player.single_mut();
     player.translation = Vec3::new(-3.0, 0.5, 0.0);
     let mut camera = camera.single_mut();
-    camera.translation = Vec3::new(0.0, 5.0, 8.0);
-    camera.look_at(Vec3::ZERO, Vec3::Y);
+    camera.translation = Vec3::new(0.0, 2.0, 6.5);
+    camera.look_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y);
 
     let (entity, combat_desc) = &combat_descriptor.single();
     commands.entity(*entity).despawn_recursive();
@@ -40,13 +40,18 @@ pub fn spawn_combat(
             3 => 4.2,
             _ => unreachable!("bad slot"),
         };
-        let character = CharacterBundle::new(
-            Vec3::new(x, 0.5, 0.0),
-            character.clone(),
-            &mut meshes,
-            &mut materials,
-        );
-        commands.spawn((character, *enemy, *stats, Name::new("Enemy"), CombatEntity));
+        commands.spawn((
+            BillboardSprite::Character(character.clone()),
+            HandOffset {
+                left: Vec2::new(-0.40, -0.37),
+                right: Vec2::new(0.35, -0.37),
+            },
+            SpatialBundle::from(Transform::from_xyz(x, 0.5, 0.0)),
+            *enemy,
+            *stats,
+            Name::new("Enemy"),
+            CombatEntity,
+        ));
     }
 
     let my_gltf = assets.load("3d/stage.glb#Scene0");

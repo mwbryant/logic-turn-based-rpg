@@ -42,7 +42,8 @@ fn spawn_test_npc(
 ) {
     let icon = commands
         .spawn((
-            IconBundle::new(Vec2::new(0.0, 1.0), Icon::KeyE, Vec2::splat(0.7)),
+            Transform::from_xyz(0., 1.0, 0.0),
+            BillboardSprite::Icon(Icon::KeyE),
             InteractIcon,
             Name::new("Npc Interact Icon"),
         ))
@@ -50,12 +51,8 @@ fn spawn_test_npc(
 
     commands
         .spawn((
-            CharacterBundle::new(
-                Vec3::new(3.0, 0.5, -6.0),
-                Character::WomanOld,
-                &mut meshes,
-                &mut materials,
-            ),
+            Transform::from_xyz(3.0, 0.5, -6.0),
+            BillboardSprite::Character(Character::WomanOld),
             Npc(1),
             Name::new("TestNPC"),
             OverworldEntity,

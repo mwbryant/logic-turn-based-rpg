@@ -62,13 +62,13 @@ fn setup(
     });
 
     commands.spawn((
-        CharacterBundle::new(
-            //Set by room config
-            Vec3::new(-3.0, 0.0, 0.0),
-            Character::Knight,
-            &mut meshes,
-            &mut materials,
-        ),
+        BillboardSprite::Character(Character::Knight),
+        //Set by room config
+        Transform::from_xyz(-3.0, 0.0, 0.0),
+        HandOffset {
+            left: Vec2::new(-0.40, -0.37),
+            right: Vec2::new(0.35, -0.37),
+        },
         PlayerCombat::default(),
         PlayerOverworld {
             movement_speed: 3.5,

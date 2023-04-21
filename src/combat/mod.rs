@@ -77,7 +77,9 @@ pub struct CombatEntity;
 pub struct VictoryFadeout;
 
 //XXX where does weapon declaration belong
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+#[derive(
+    Component, Clone, PartialEq, Eq, Hash, Default, Reflect, FromReflect, Serialize, Deserialize,
+)]
 pub enum Weapon {
     #[default]
     BasicStaffOrange,

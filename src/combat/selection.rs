@@ -58,23 +58,24 @@ fn lock_in_attack(
 
 fn spawn_player_attack_icons(mut commands: Commands) {
     commands.spawn((
-        WeaponBundle::new(Vec2::new(-3.0, 1.7), Weapon::BasicSpear, Vec2::splat(0.75)),
+        SpatialBundle::from_transform(Transform::from_xyz(-3.0, 0.0, 1.7)),
+        BillboardSprite::Weapon(Weapon::BasicSpear),
+        Weapon::BasicSpear,
         WeaponIcon(0),
         Name::new("SpearIcon"),
     ));
 
     commands.spawn((
-        WeaponBundle::new(
-            Vec2::new(-2.5, 1.7),
-            Weapon::BasicStaffOrange,
-            Vec2::splat(0.75),
-        ),
+        SpatialBundle::from_transform(Transform::from_xyz(-2.5, 0.0, 1.7)),
+        BillboardSprite::Weapon(Weapon::BasicStaffOrange),
+        Weapon::BasicStaffOrange,
         WeaponIcon(1),
         Name::new("StaffIcon"),
     ));
 
     commands.spawn((
-        IconBundle::new(Vec2::new(-3.0, 1.0), Icon::Pointer, Vec2::splat(0.5)),
+        SpatialBundle::from_transform(Transform::from_xyz(-3.0, 0.0, 1.0)),
+        BillboardSprite::Icon(Icon::Pointer),
         CurrentSelectedMenuItem {
             selection: 0,
             slots: 2,

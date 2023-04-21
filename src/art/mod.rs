@@ -4,7 +4,7 @@ mod particles;
 mod post_processing;
 pub mod sprite_sheets;
 use bevy::render::camera::CameraPlugin;
-use bevy::sprite::MaterialMesh2dBundle;
+use bevy::sprite::{self, MaterialMesh2dBundle};
 use serde::{Deserialize, Serialize};
 pub use sprite_sheets::*;
 
@@ -112,35 +112,6 @@ pub struct RotatingParticle {
 #[derive(Component, Clone, Reflect)]
 pub struct FadingParticle {}
 
-#[derive(Bundle)]
-pub struct WeaponBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    weapon: Weapon,
-}
-
-#[derive(Bundle)]
-pub struct CharacterBundle {
-    #[bundle]
-    pub sprite: MaterialMeshBundle<StandardMaterial>,
-    hand_offset: HandOffset,
-    character: Character,
-}
-
-#[derive(Bundle)]
-pub struct IconBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    icon: Icon,
-}
-
-#[derive(Bundle)]
-pub struct PlanetBundle {
-    #[bundle]
-    sprite_sheet: SpriteSheetBundle,
-    planet: Planet,
-}
-
 //Used for the weapon in the players hand during an attack animation
 #[derive(Component)]
 pub struct WeaponGraphic;
@@ -154,8 +125,9 @@ pub struct HandOffset {
 pub const CHARACTER_SHEET_WIDTH: usize = 54;
 pub const CHARACTER_SHEET_HEIGHT: usize = 12;
 pub const ICON_SHEET_WIDTH: usize = 34;
+pub const ICON_SHEET_HEIGHT: usize = 24;
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+#[derive(Clone, PartialEq, Eq, Hash, Default, Reflect, FromReflect, Serialize, Deserialize)]
 pub enum Icon {
     #[default]
     Pointer,
@@ -163,6 +135,16 @@ pub enum Icon {
 }
 
 #[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect, Serialize, Deserialize)]
+pub enum BillboardSprite {
+    #[default]
+    None,
+    Character(Character),
+    Icon(Icon),
+    Planet(Planet),
+    Weapon(Weapon),
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Default, Reflect, Serialize, Deserialize, FromReflect)]
 pub enum Character {
     #[default]
     WhiteBase,
@@ -190,7 +172,7 @@ pub enum Character {
 }
 
 // I use the planet sheet for magic projectiles
-#[derive(Component, Clone, PartialEq, Eq, Hash, Default, Reflect)]
+#[derive(Clone, PartialEq, Eq, Hash, Default, Reflect, FromReflect, Serialize, Deserialize)]
 pub enum Planet {
     #[default]
     Fireball,
@@ -201,9 +183,19 @@ pub struct SpriteSheetMaps {
     character_atlas: Handle<Image>,
     icon_atlas: Handle<Image>,
     planet_atlas: Handle<Image>,
-    pub character_size: (usize, usize),
-    pub characters: HashMap<Character, (usize, usize)>,
-    pub weapons: HashMap<Weapon, usize>,
-    pub icons: HashMap<Icon, usize>,
-    pub planets: HashMap<Planet, usize>,
+    weapon_atlas: Handle<Image>,
+    pub sprites: HashMap<BillboardSprite, (usize, usize)>,
+}
+
+//TODO better way to do this
+impl SpriteSheetMaps {
+    pub fn get_atlas(&self, sprite: BillboardSprite) -> Handle<Image> {
+        match sprite {
+            BillboardSprite::Character(_) => self.character_atlas.clone(),
+            BillboardSprite::Icon(_) => self.icon_atlas.clone(),
+            BillboardSprite::Planet(_) => self.planet_atlas.clone(),
+            BillboardSprite::Weapon(_) => self.weapon_atlas.clone(),
+            BillboardSprite::None => todo!(),
+        }
+    }
 }

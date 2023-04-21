@@ -85,14 +85,12 @@ fn spawn_current_room(
 ) {
     for (id, enemy, position) in room.enemies.iter() {
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);
-        let mut character =
-            CharacterBundle::new(*position, Character::GreenBase, &mut meshes, &mut materials);
-        //character.sprite_sheet.transform.translation.z = ENEMY_Z;
 
         commands.spawn((
             enemy.clone(),
+            Transform::from_translation(*position),
+            BillboardSprite::Character(Character::GreenBase),
             descriptor,
-            character,
             OverworldEntity,
             Name::new("Enemy"),
             EnemyId(*id),
