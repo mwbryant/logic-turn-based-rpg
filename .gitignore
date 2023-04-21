@@ -4,3 +4,4 @@ wasm/bevy_game*
 wasm/assets
 *.blend
 *.blend1
+assets/3d/raw/

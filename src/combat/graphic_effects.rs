@@ -1,5 +1,3 @@
-use bevy_inspector_egui::egui::epaint::text;
-
 use crate::prelude::*;
 
 pub struct GraphicEffectsPlugin;
@@ -27,7 +25,6 @@ fn add_death_animation(mut commands: Commands, mut death_event: EventReader<Deat
 fn projectile_particles(
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     projectiles: Query<(Entity, &Transform), With<Projectile>>,
     mut projectile_emitter: Query<
         (
@@ -91,7 +88,6 @@ fn projectile_particles(
 fn spawn_hit_particles(
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut hit_event: EventReader<HitEvent>,
     target: Query<&Transform>,
 ) {
@@ -123,11 +119,7 @@ fn spawn_hit_particles(
     }
 }
 
-fn spawn_player_win_particles(
-    mut commands: Commands,
-    assets: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
+fn spawn_player_win_particles(mut commands: Commands, assets: Res<AssetServer>) {
     let texture_handle = assets.load("my_art/particles.png");
 
     let particle_desc = ParticleDesc {

@@ -38,7 +38,7 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     // directional 'sun' light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
@@ -80,6 +80,16 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         Name::new("Player"),
+    ));
+
+    commands.spawn((
+        SceneBundle {
+            scene: assets.load("3d/sign.glb#Scene0"),
+            transform: Transform::from_xyz(-2.0, 0.0, 0.0),
+            ..Default::default()
+        },
+        Name::new("Sign"),
+        OverworldEntity,
     ));
 
     /*
