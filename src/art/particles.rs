@@ -26,7 +26,7 @@ pub fn create_new_rect_emitter(
 ) -> Entity {
     let parent = commands
         .spawn((
-            SpatialBundle::from_transform(Transform::from_xyz(position.x, position.y, PARTICLE_Z)),
+            SpatialBundle::from_transform(Transform::from_xyz(position.x, position.y, 0.0)),
             Lifetime {
                 timer: Timer::from_seconds(
                     lifetime + particle_desc.particle.lifetime.remaining_secs(),
@@ -40,7 +40,7 @@ pub fn create_new_rect_emitter(
 
     commands
         .spawn((
-            SpatialBundle::from_transform(Transform::from_xyz(position.x, position.y, PARTICLE_Z)),
+            SpatialBundle::from_transform(Transform::from_xyz(position.x, position.y, 0.0)),
             Lifetime {
                 timer: Timer::from_seconds(lifetime, TimerMode::Once),
             },
@@ -60,6 +60,8 @@ fn particle_emitter_spawn(
     mut commands: Commands,
     //Global transforms allow for moving emitters and static parents
     mut emitters: Query<(&mut RectParticleEmitter, &GlobalTransform)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     parents: Query<&GlobalTransform, With<ParticleParent>>,
     time: Res<Time>,
 ) {
@@ -72,19 +74,35 @@ fn particle_emitter_spawn(
                 rng.gen_range((-emitter.size.x / 2.0)..(emitter.size.x / 2.0)),
                 rng.gen_range((-emitter.size.y / 2.0)..(emitter.size.y / 2.0)),
             );
-            let emitter_to_parent_difference = emitter_transform.translation().truncate()
+            let emitter_to_parent_difference = emitter_transform.translation()
                 - parents
                     .get(emitter.particle_parent)
                     .expect("No parent")
-                    .translation()
-                    .truncate();
+                    .translation();
 
             //Faster to spawn batch or not noticible?
             //TODO move all generic emitter work to a standalone function
-            let mut sprite = emitter.desc.sprite.clone();
-            sprite.sprite.index = rng.gen_range(0..emitter.varients);
-            sprite.transform.translation =
-                Vec3::new(x_offset, y_offset, 0.0) + emitter_to_parent_difference.extend(0.0);
+            let sprite = emitter.desc.sprite.clone();
+            let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0, 1.0))));
+
+            let material_handle = materials.add(StandardMaterial {
+                base_color_texture: Some(sprite),
+                alpha_mode: AlphaMode::Blend,
+                double_sided: true,
+                cull_mode: None,
+                ..default()
+            });
+
+            let sprite = MaterialMeshBundle {
+                mesh: quad_handle,
+                material: material_handle,
+                transform: Transform::from_translation(
+                    Vec3::new(x_offset, y_offset, 0.0) + emitter_to_parent_difference,
+                ),
+                ..default()
+            };
+
+            let index = rng.gen_range(0..emitter.varients);
 
             let mut particle = commands.spawn((sprite, emitter.desc.particle.clone()));
 

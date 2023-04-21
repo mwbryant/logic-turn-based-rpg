@@ -1,3 +1,5 @@
+use bevy_inspector_egui::egui::epaint::text;
+
 use crate::prelude::*;
 
 pub struct GraphicEffectsPlugin;
@@ -59,20 +61,11 @@ fn projectile_particles(
         //Create new emitters, lazily
         if projectile_emitter.get(projectile).is_err() {
             let texture_handle = assets.load("my_art/smoke_particles.png");
-            let texture_atlas =
-                TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 1, 1, None, None);
-            let particle_atlas = texture_atlases.add(texture_atlas);
 
             let particle_desc = ParticleDesc {
                 particle: Particle::new(1.0),
-                sprite: SpriteSheetBundle {
-                    sprite: TextureAtlasSprite {
-                        custom_size: Some(Vec2::splat(0.53)),
-                        ..default()
-                    },
-                    texture_atlas: particle_atlas,
-                    ..default()
-                },
+                sprite: texture_handle,
+                sprite_size: (1, 1),
                 falling: Some(FallingParticle { speed: 1.0 }),
                 rotating: Some(RotatingParticle { speed: 2.0 }),
                 fading: Some(FadingParticle {}),
@@ -106,20 +99,11 @@ fn spawn_hit_particles(
         let translation = target.get(hit.target).expect("No target").translation;
 
         let texture_handle = assets.load("my_art/particles.png");
-        let texture_atlas =
-            TextureAtlas::from_grid(texture_handle, Vec2::new(16.0, 16.0), 2, 2, None, None);
-        let particle_atlas = texture_atlases.add(texture_atlas);
 
         let particle_desc = ParticleDesc {
             particle: Particle::new(1.0),
-            sprite: SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    custom_size: Some(Vec2::splat(0.13)),
-                    ..default()
-                },
-                texture_atlas: particle_atlas,
-                ..default()
-            },
+            sprite: texture_handle,
+            sprite_size: (2, 2),
             //falling: Some(FallingParticle { speed: 3.0 }),
             rotating: Some(RotatingParticle { speed: 10.0 }),
             fading: Some(FadingParticle {}),
@@ -145,20 +129,11 @@ fn spawn_player_win_particles(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let texture_handle = assets.load("my_art/particles.png");
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(16.0, 16.0), 2, 2, None, None);
-    let particle_atlas = texture_atlases.add(texture_atlas);
 
     let particle_desc = ParticleDesc {
         particle: Particle::new(3.0),
-        sprite: SpriteSheetBundle {
-            sprite: TextureAtlasSprite {
-                custom_size: Some(Vec2::splat(0.13)),
-                ..default()
-            },
-            texture_atlas: particle_atlas,
-            ..default()
-        },
+        sprite: texture_handle,
+        sprite_size: (2, 2),
         falling: Some(FallingParticle { speed: 4.0 }),
         rotating: Some(RotatingParticle { speed: 10.0 }),
         fading: Some(FadingParticle {}),

@@ -78,7 +78,8 @@ pub struct RectParticleEmitter {
 #[derive(Component, Default, Clone)]
 pub struct ParticleDesc {
     pub particle: Particle,
-    pub sprite: SpriteSheetBundle,
+    pub sprite: Handle<Image>,
+    pub sprite_size: (usize, usize),
     pub falling: Option<FallingParticle>,
     pub radial: Option<RadialParticle>,
     pub rotating: Option<RotatingParticle>,
