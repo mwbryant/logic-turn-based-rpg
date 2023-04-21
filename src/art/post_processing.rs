@@ -1,13 +1,10 @@
-use bevy::{
-    core_pipeline::tonemapping::Tonemapping,
-    render::{
-        camera::{RenderTarget, ScalingMode},
-        render_resource::{
-            Extent3d, ShaderType, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
-        texture::BevyDefault,
-        view::RenderLayers,
+use bevy::render::{
+    camera::{RenderTarget, ScalingMode},
+    render_resource::{
+        Extent3d, ShaderType, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
+    texture::BevyDefault,
+    view::RenderLayers,
 };
 
 use crate::prelude::*;
@@ -133,7 +130,7 @@ fn setup_camera(
     let render_image_handle = images.add(render_target);
 
     let mut camera = Camera3dBundle::default();
-    camera.tonemapping = Tonemapping::TonyMcMapface;
+    //camera.tonemapping = Tonemapping::TonyMcMapface;
     //camera.projection.scaling_mode = ScalingMode::FixedVertical(10.0);
     //camera.transform.translation.x = 320.0;
     //camera.transform.translation.y = 240.0;

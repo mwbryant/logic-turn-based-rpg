@@ -3,8 +3,7 @@ mod fade_in;
 mod particles;
 mod post_processing;
 pub mod sprite_sheets;
-use bevy::render::camera::CameraPlugin;
-use bevy::sprite::{self, MaterialMesh2dBundle};
+
 use serde::{Deserialize, Serialize};
 pub use sprite_sheets::*;
 

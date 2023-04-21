@@ -1,9 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{
-    input::common_conditions::input_toggle_active, pbr::CascadeShadowConfigBuilder,
-    render::camera::ScalingMode,
-};
+use bevy::input::common_conditions::input_toggle_active;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use logic_turn_based_rpg::prelude::*;
 
@@ -41,11 +38,7 @@ fn main() {
     app.run();
 }
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn setup(mut commands: Commands) {
     // directional 'sun' light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {

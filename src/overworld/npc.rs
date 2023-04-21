@@ -35,11 +35,7 @@ fn update_dialog_box(
     }
 }
 
-fn spawn_test_npc(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn spawn_test_npc(mut commands: Commands) {
     let icon = commands
         .spawn((
             Transform::from_xyz(0., 1.0, 0.0),

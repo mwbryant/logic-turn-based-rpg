@@ -3,7 +3,7 @@ use crate::prelude::*;
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
-    fn build(&self, app: &mut App) {
+    fn build(&self, _app: &mut App) {
         //app.add_startup_system(spawn_map);
     }
 }

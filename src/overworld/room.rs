@@ -80,8 +80,6 @@ fn spawn_current_room(
     room: Res<CurrentRoom>,
     mut player: Query<&mut Transform, With<PlayerOverworld>>,
     mut next_state: ResMut<NextState<OverworldState>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (id, enemy, position) in room.enemies.iter() {
         let descriptor: Handle<CombatDescriptor> = assets.load(&enemy.combat_ref);

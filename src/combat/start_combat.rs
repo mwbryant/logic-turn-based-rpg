@@ -13,8 +13,6 @@ pub fn spawn_combat(
     combat_descriptor: Query<(Entity, &Handle<CombatDescriptor>), With<CombatStartTag>>,
     mut player: Query<&mut Transform, With<PlayerCombat>>,
     mut camera: Query<&mut Transform, (With<MainCamera>, Without<PlayerCombat>)>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     combats: Res<Assets<CombatDescriptor>>,
     assets: Res<AssetServer>,
 ) {

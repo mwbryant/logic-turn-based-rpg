@@ -1,5 +1,3 @@
-use bevy::sprite::Anchor;
-
 use crate::prelude::*;
 
 pub struct SpriteSheetPlugin;
@@ -13,11 +11,11 @@ impl Plugin for SpriteSheetPlugin {
 }
 
 fn update_art(
-    mut sprites: Query<(&Handle<StandardMaterial>, &Handle<Mesh>, &BillboardSprite)>,
+    mut sprites: Query<(&Handle<Mesh>, &BillboardSprite)>,
     mut meshes: ResMut<Assets<Mesh>>,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
-    for (material, mesh, character) in &mut sprites {
+    for (mesh, character) in &mut sprites {
         let mesh = meshes.get_mut(mesh).unwrap();
 
         let index = sprite_sheets.sprites[character];
@@ -113,7 +111,7 @@ fn setup_sprite_graphics(
     mut materials: ResMut<Assets<StandardMaterial>>,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
-    for (character, transform, sprite) in &characters {
+    for (character, transform, _sprite) in &characters {
         let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0, 1.0))));
 
         let material_handle = materials.add(StandardMaterial {
@@ -128,7 +126,7 @@ fn setup_sprite_graphics(
             mesh: quad_handle,
             material: material_handle,
             ///XXX do I really need this
-            transform: transform.clone(),
+            transform: *transform,
             ..default()
         });
     }
