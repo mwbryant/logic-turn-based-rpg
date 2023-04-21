@@ -143,11 +143,12 @@ fn animate_ranged(
             AttackStage::WalkUp => {
                 if projectile.iter().count() == 0 {
                     //spawn projectile
-                    //commands.spawn((
-                    //PlanetBundle::new(Vec2::new(0.0, 0.4), Planet::Fireball),
-                    //Projectile,
-                    //WeaponGraphic,
-                    //));
+                    commands.spawn((
+                        BillboardSprite::Planet(Planet::Fireball),
+                        Transform::from_xyz(0.0, 0.6, 0.1).with_scale(Vec3::splat(0.5)),
+                        Projectile,
+                        WeaponGraphic,
+                    ));
                 } else {
                     let (_, mut projectile_transform) =
                         projectile.get_single_mut().expect("too many projectiles");

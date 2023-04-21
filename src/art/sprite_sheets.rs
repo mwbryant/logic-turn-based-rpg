@@ -19,7 +19,13 @@ fn update_art(
         let mesh = meshes.get_mut(mesh).unwrap();
 
         let index = sprite_sheets.sprites[character];
-        let size = (CHARACTER_SHEET_WIDTH, CHARACTER_SHEET_HEIGHT);
+        let size = match character {
+            BillboardSprite::None => todo!(),
+            BillboardSprite::Character(_) => (CHARACTER_SHEET_WIDTH, CHARACTER_SHEET_HEIGHT),
+            BillboardSprite::Icon(_) => (ICON_SHEET_WIDTH, ICON_SHEET_HEIGHT),
+            BillboardSprite::Planet(_) => (1, 1),
+            BillboardSprite::Weapon(_) => (CHARACTER_SHEET_WIDTH, CHARACTER_SHEET_HEIGHT),
+        };
 
         let uvs = get_uvs(index, size);
 
@@ -86,7 +92,7 @@ fn setup_spritesheet_maps(mut commands: Commands, asset_server: Res<AssetServer>
     ]);
 
     sprites.insert(BillboardSprite::Icon(Icon::Pointer), (0, 17));
-    sprites.insert(BillboardSprite::Icon(Icon::KeyE), (10, 19));
+    sprites.insert(BillboardSprite::Icon(Icon::KeyE), (19, 10));
 
     sprites.insert(BillboardSprite::Planet(Planet::Fireball), (0, 0));
 
@@ -111,11 +117,11 @@ fn setup_sprite_graphics(
     mut materials: ResMut<Assets<StandardMaterial>>,
     sprite_sheets: Res<SpriteSheetMaps>,
 ) {
-    for (character, transform, _sprite) in &characters {
+    for (character, transform, sprite) in &characters {
         let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0, 1.0))));
 
         let material_handle = materials.add(StandardMaterial {
-            base_color_texture: Some(sprite_sheets.character_atlas.clone()),
+            base_color_texture: Some(sprite_sheets.get_atlas(sprite)),
             alpha_mode: AlphaMode::Blend,
             double_sided: true,
             cull_mode: None,

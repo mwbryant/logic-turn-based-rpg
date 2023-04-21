@@ -58,7 +58,7 @@ fn lock_in_attack(
 
 fn spawn_player_attack_icons(mut commands: Commands) {
     commands.spawn((
-        SpatialBundle::from_transform(Transform::from_xyz(-3.0, 0.0, 1.7)),
+        SpatialBundle::from_transform(Transform::from_xyz(-3.0, 1.7, 0.0)),
         BillboardSprite::Weapon(Weapon::BasicSpear),
         Weapon::BasicSpear,
         WeaponIcon(0),
@@ -66,7 +66,7 @@ fn spawn_player_attack_icons(mut commands: Commands) {
     ));
 
     commands.spawn((
-        SpatialBundle::from_transform(Transform::from_xyz(-2.5, 0.0, 1.7)),
+        SpatialBundle::from_transform(Transform::from_xyz(-2.5, 1.7, 0.0)),
         BillboardSprite::Weapon(Weapon::BasicStaffOrange),
         Weapon::BasicStaffOrange,
         WeaponIcon(1),
@@ -74,7 +74,9 @@ fn spawn_player_attack_icons(mut commands: Commands) {
     ));
 
     commands.spawn((
-        SpatialBundle::from_transform(Transform::from_xyz(-3.0, 0.0, 1.0)),
+        SpatialBundle::from_transform(
+            Transform::from_xyz(-3.25, 1.0, 0.0).with_scale(Vec3::splat(0.5)),
+        ),
         BillboardSprite::Icon(Icon::Pointer),
         CurrentSelectedMenuItem {
             selection: 0,
@@ -109,6 +111,6 @@ fn update_icon_location(
 ) {
     for (mut transform, selection) in &mut selection {
         let location = (selection.selection.rem_euclid(selection.slots)) as f32;
-        transform.translation = Vec3::new(-3.0 + location / 2.0, 1.0, ICON_Z);
+        transform.translation = Vec3::new(-3.25 + location / 2.0, 1.0, 0.0);
     }
 }

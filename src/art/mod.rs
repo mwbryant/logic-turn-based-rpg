@@ -188,7 +188,7 @@ pub struct SpriteSheetMaps {
 
 //TODO better way to do this
 impl SpriteSheetMaps {
-    pub fn get_atlas(&self, sprite: BillboardSprite) -> Handle<Image> {
+    pub fn get_atlas(&self, sprite: &BillboardSprite) -> Handle<Image> {
         match sprite {
             BillboardSprite::Character(_) => self.character_atlas.clone(),
             BillboardSprite::Icon(_) => self.icon_atlas.clone(),
